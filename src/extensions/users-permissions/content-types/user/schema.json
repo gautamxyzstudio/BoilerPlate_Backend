@@ -23,7 +23,7 @@
       "type": "email",
       "minLength": 6,
       "configurable": false,
-      "unique":true
+      "unique": true
     },
     "provider": {
       "type": "string",
@@ -67,7 +67,13 @@
     },
     "phoneNumber": {
       "type": "string",
-      "unique":true
+      "unique": true
+    },
+    "user_profile": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::user-profile.user-profile",
+      "mappedBy": "users_permissions_user"
     }
   }
 }
