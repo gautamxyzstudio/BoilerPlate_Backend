@@ -1,0 +1,62 @@
+{
+  "kind": "collectionType",
+  "collectionName": "pending_signups",
+  "info": {
+    "singularName": "pending-signup",
+    "pluralName": "pending-signups",
+    "displayName": "Pending Signup"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "identifier": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "identifierType": {
+      "type": "enumeration",
+      "enum": [
+        "email",
+        "phone"
+      ],
+      "required": true
+    },
+    "password": {
+      "type": "text",
+      "required": true
+    },
+    "role": {
+      "type": "string",
+      "required": true
+    },
+    "signupToken": {
+      "type": "uid",
+      "required": true
+    },
+    "otpHash": {
+      "type": "string",
+      "required": true
+    },
+    "otpExpiresAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "signupExpiresAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "attempts": {
+      "type": "integer",
+      "default": 0
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "lastSentAt": {
+      "type": "datetime"
+    }
+  }
+}
