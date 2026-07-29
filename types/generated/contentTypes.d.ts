@@ -569,7 +569,7 @@ export interface ApiGarmentTypeGarmentType extends Struct.CollectionTypeSchema {
     singularName: 'garment-type';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
