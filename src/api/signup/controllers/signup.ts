@@ -5,35 +5,13 @@ import { encrypt } from "../../../utils/encryption";
 import { sendEmailOtp } from "../../../utils/sendEmailOtp";
 import { sendSmsOtp } from "../../../utils/sendSmsOtp";
 import { decrypt } from "../../../utils/encryption";
+import { normalizeIdentifier } from "../../../utils/normalizeIdentifier";
 
 const OTP_EXPIRY_MINUTES = 3;
 const SIGNUP_EXPIRY_MINUTES = 10;
 
 const generateOtp = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
-
-const normalizeIdentifier = (identifier: string) => {
-  const value = identifier.trim();
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^[6-9]\d{9}$/;
-
-  if (emailRegex.test(value)) {
-    return {
-      identifier: value.toLowerCase(),
-      identifierType: "email",
-    };
-  }
-
-  if (phoneRegex.test(value)) {
-    return {
-      identifier: `+91${value}`,
-      identifierType: "phone",
-    };
-  }
-
-  return null;
-};
 
 export default factories.createCoreController(
   "api::pending-signup.pending-signup",
