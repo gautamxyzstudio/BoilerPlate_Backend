@@ -17,6 +17,7 @@
   "dependencies": {
     "@strapi/database": "5.51.0",
     "@strapi/plugin-cloud": "5.51.0",
+    "@strapi/plugin-documentation": "^5.51.0",
     "@strapi/plugin-users-permissions": "5.51.0",
     "@strapi/strapi": "5.51.0",
     "bcrypt": "^6.0.0",

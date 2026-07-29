@@ -443,6 +443,83 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAddressAddress extends Struct.CollectionTypeSchema {
+  collectionName: 'addresses';
+  info: {
+    displayName: 'Customer Address';
+    pluralName: 'addresses';
+    singularName: 'address';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    addressTitle: Schema.Attribute.String;
+    addressType: Schema.Attribute.Enumeration<['home', 'work', 'other']>;
+    city: Schema.Attribute.String;
+    country: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    fullAddress: Schema.Attribute.Text;
+    isDefaultAddress: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<true>;
+    landmark: Schema.Attribute.String;
+    latitude: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::address.address'
+    > &
+      Schema.Attribute.Private;
+    longitude: Schema.Attribute.String;
+    postalCode: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    state: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    users_permissions_user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
+export interface ApiGarmentTypeGarmentType extends Struct.CollectionTypeSchema {
+  collectionName: 'garment_types';
+  info: {
+    displayName: 'Garment Type';
+    pluralName: 'garment-types';
+    singularName: 'garment-type';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::garment-type.garment-type'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    service_pricings: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::service-pricing.service-pricing'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiPendingSignupPendingSignup
   extends Struct.CollectionTypeSchema {
   collectionName: 'pending_signups';
@@ -482,6 +559,118 @@ export interface ApiPendingSignupPendingSignup
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     verified: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+  };
+}
+
+export interface ApiServiceCategoryServiceCategory
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'service_categories';
+  info: {
+    displayName: 'Service Category';
+    pluralName: 'service-categories';
+    singularName: 'service-category';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    displayOrder: Schema.Attribute.Integer;
+    image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::service-category.service-category'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    services: Schema.Attribute.Relation<'oneToMany', 'api::service.service'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiServicePricingServicePricing
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'service_pricings';
+  info: {
+    displayName: 'Service Pricing';
+    pluralName: 'service-pricings';
+    singularName: 'service-pricing';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    expressDeliveryPrice: Schema.Attribute.Integer;
+    garment_type: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::garment-type.garment-type'
+    >;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::service-pricing.service-pricing'
+    > &
+      Schema.Attribute.Private;
+    offerPrice: Schema.Attribute.Integer;
+    price: Schema.Attribute.Integer;
+    publishedAt: Schema.Attribute.DateTime;
+    service: Schema.Attribute.Relation<'manyToOne', 'api::service.service'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiServiceService extends Struct.CollectionTypeSchema {
+  collectionName: 'services';
+  info: {
+    displayName: 'Services';
+    pluralName: 'services';
+    singularName: 'service';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    estimatedTime: Schema.Attribute.DateTime;
+    image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::service.service'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String;
+    price: Schema.Attribute.Integer;
+    publishedAt: Schema.Attribute.DateTime;
+    service_category: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::service-category.service-category'
+    >;
+    service_pricings: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::service-pricing.service-pricing'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -993,6 +1182,10 @@ export interface PluginUsersPermissionsUser
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    customer_addresses: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::address.address'
+    >;
     email: Schema.Attribute.Email &
       Schema.Attribute.Unique &
       Schema.Attribute.SetMinMaxLength<{
@@ -1043,7 +1236,12 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::address.address': ApiAddressAddress;
+      'api::garment-type.garment-type': ApiGarmentTypeGarmentType;
       'api::pending-signup.pending-signup': ApiPendingSignupPendingSignup;
+      'api::service-category.service-category': ApiServiceCategoryServiceCategory;
+      'api::service-pricing.service-pricing': ApiServicePricingServicePricing;
+      'api::service.service': ApiServiceService;
       'api::user-profile.user-profile': ApiUserProfileUserProfile;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

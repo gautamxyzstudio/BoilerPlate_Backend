@@ -1,0 +1,60 @@
+{
+  "kind": "collectionType",
+  "collectionName": "addresses",
+  "info": {
+    "singularName": "address",
+    "pluralName": "addresses",
+    "displayName": "Customer Address"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "addressTitle": {
+      "type": "string"
+    },
+    "fullAddress": {
+      "type": "text"
+    },
+    "landmark": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "postalCode": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "string"
+    },
+    "longitude": {
+      "type": "string"
+    },
+    "isDefaultAddress": {
+      "type": "boolean",
+      "default": true
+    },
+    "addressType": {
+      "type": "enumeration",
+      "enum": [
+        "home",
+        "work",
+        "other"
+      ]
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "customer_addresses"
+    }
+  }
+}

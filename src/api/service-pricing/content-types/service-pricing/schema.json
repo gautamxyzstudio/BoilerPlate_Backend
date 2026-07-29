@@ -1,0 +1,40 @@
+{
+  "kind": "collectionType",
+  "collectionName": "service_pricings",
+  "info": {
+    "singularName": "service-pricing",
+    "pluralName": "service-pricings",
+    "displayName": "Service Pricing"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "price": {
+      "type": "integer"
+    },
+    "offerPrice": {
+      "type": "integer"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "expressDeliveryPrice": {
+      "type": "integer"
+    },
+    "service": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::service.service",
+      "inversedBy": "service_pricings"
+    },
+    "garment_type": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::garment-type.garment-type",
+      "inversedBy": "service_pricings"
+    }
+  }
+}
