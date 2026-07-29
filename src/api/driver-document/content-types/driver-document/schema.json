@@ -1,0 +1,34 @@
+{
+  "kind": "collectionType",
+  "collectionName": "driver_documents",
+  "info": {
+    "singularName": "driver-document",
+    "pluralName": "driver-documents",
+    "displayName": "Driver Documents"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "documentName": {
+      "type": "string"
+    },
+    "documentImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "driver_detail": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::driver-detail.driver-detail",
+      "inversedBy": "driver_documents"
+    }
+  }
+}

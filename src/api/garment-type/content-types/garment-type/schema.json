@@ -33,6 +33,12 @@
       "relation": "oneToMany",
       "target": "api::service-pricing.service-pricing",
       "mappedBy": "garment_type"
+    },
+    "service": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::service.service",
+      "inversedBy": "garment_types"
     }
   }
 }

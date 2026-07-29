@@ -80,6 +80,12 @@
       "relation": "oneToMany",
       "target": "api::address.address",
       "mappedBy": "users_permissions_user"
+    },
+    "driver_detail": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::driver-detail.driver-detail",
+      "mappedBy": "users_permissions_user"
     }
   }
 }

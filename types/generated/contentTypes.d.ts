@@ -486,6 +486,81 @@ export interface ApiAddressAddress extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiDriverDetailDriverDetail
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'driver_details';
+  info: {
+    displayName: 'Driver Detail';
+    pluralName: 'driver-details';
+    singularName: 'driver-detail';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    driver_documents: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::driver-document.driver-document'
+    >;
+    email: Schema.Attribute.Email;
+    fullName: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::driver-detail.driver-detail'
+    > &
+      Schema.Attribute.Private;
+    phoneNumber: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    users_permissions_user: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
+export interface ApiDriverDocumentDriverDocument
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'driver_documents';
+  info: {
+    displayName: 'Driver Documents';
+    pluralName: 'driver-documents';
+    singularName: 'driver-document';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    documentImage: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios'
+    >;
+    documentName: Schema.Attribute.String;
+    driver_detail: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::driver-detail.driver-detail'
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::driver-document.driver-document'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiGarmentTypeGarmentType extends Struct.CollectionTypeSchema {
   collectionName: 'garment_types';
   info: {
@@ -510,6 +585,7 @@ export interface ApiGarmentTypeGarmentType extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     name: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
+    service: Schema.Attribute.Relation<'manyToOne', 'api::service.service'>;
     service_pricings: Schema.Attribute.Relation<
       'oneToMany',
       'api::service-pricing.service-pricing'
@@ -605,7 +681,7 @@ export interface ApiServicePricingServicePricing
     singularName: 'service-pricing';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -641,7 +717,7 @@ export interface ApiServiceService extends Struct.CollectionTypeSchema {
     singularName: 'service';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -649,6 +725,10 @@ export interface ApiServiceService extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
     estimatedTime: Schema.Attribute.DateTime;
+    garment_types: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::garment-type.garment-type'
+    >;
     image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -658,7 +738,6 @@ export interface ApiServiceService extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     name: Schema.Attribute.String;
-    price: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
     service_category: Schema.Attribute.Relation<
       'manyToOne',
@@ -1186,6 +1265,10 @@ export interface PluginUsersPermissionsUser
       'oneToMany',
       'api::address.address'
     >;
+    driver_detail: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::driver-detail.driver-detail'
+    >;
     email: Schema.Attribute.Email &
       Schema.Attribute.Unique &
       Schema.Attribute.SetMinMaxLength<{
@@ -1237,6 +1320,8 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::address.address': ApiAddressAddress;
+      'api::driver-detail.driver-detail': ApiDriverDetailDriverDetail;
+      'api::driver-document.driver-document': ApiDriverDocumentDriverDocument;
       'api::garment-type.garment-type': ApiGarmentTypeGarmentType;
       'api::pending-signup.pending-signup': ApiPendingSignupPendingSignup;
       'api::service-category.service-category': ApiServiceCategoryServiceCategory;

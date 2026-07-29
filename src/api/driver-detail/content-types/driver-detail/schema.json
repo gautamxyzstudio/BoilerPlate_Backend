@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "driver_details",
+  "info": {
+    "singularName": "driver-detail",
+    "pluralName": "driver-details",
+    "displayName": "Driver Detail"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "fullName": {
+      "type": "string"
+    },
+    "email": {
+      "type": "email"
+    },
+    "phoneNumber": {
+      "type": "string"
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "driver_detail"
+    },
+    "driver_documents": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::driver-document.driver-document",
+      "mappedBy": "driver_detail"
+    }
+  }
+}

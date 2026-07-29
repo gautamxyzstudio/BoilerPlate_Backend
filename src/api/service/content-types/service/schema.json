@@ -7,7 +7,7 @@
     "displayName": "Services"
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
@@ -16,9 +16,6 @@
     },
     "description": {
       "type": "text"
-    },
-    "price": {
-      "type": "integer"
     },
     "image": {
       "type": "media",
@@ -47,6 +44,12 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::service-pricing.service-pricing",
+      "mappedBy": "service"
+    },
+    "garment_types": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::garment-type.garment-type",
       "mappedBy": "service"
     }
   }
