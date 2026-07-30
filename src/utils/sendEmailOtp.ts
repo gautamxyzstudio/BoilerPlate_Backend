@@ -2,11 +2,12 @@ import axios from "axios";
 
 export const sendEmailOtp = async (
   email: string,
-  otp: string
+  otp: string,
+  subject = "Email Verification OTP",
+  title = "Email Verification",
+  message = "Your OTP is:"
 ): Promise<void> => {
   try {
-    // console.log("API KEY",process.env.BREVO_API_KEY)
-    // console.log("sender",process.env.BREVO_EMAIL_SENDER)
     await axios.post(
       "https://api.brevo.com/v3/smtp/email",
       {
@@ -19,18 +20,26 @@ export const sendEmailOtp = async (
             email,
           },
         ],
-        subject: "Email Verification OTP",
+        subject,
         htmlContent: `
-        <div style="font-family:Arial,sans-serif">
-            <h2>Email Verification</h2>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+            <h2>${title}</h2>
 
-            <p>Your OTP is:</p>
+            <p>${message}</p>
 
-            <h1 style="letter-spacing:5px">${otp}</h1>
+            <h1 style="
+                letter-spacing:5px;
+                background:#f4f4f4;
+                padding:15px;
+                display:inline-block;
+                border-radius:6px;
+            ">
+                ${otp}
+            </h1>
 
-            <p>This OTP is valid for 2 minutes.</p>
+            <p>This OTP is valid for 3 minutes.</p>
 
-            <p>If you didn't request this, ignore this email.</p>
+            <p>If you didn't request this, please ignore this email.</p>
         </div>
         `,
       },
@@ -41,10 +50,10 @@ export const sendEmailOtp = async (
         },
       }
     );
-  }  catch (error: any) {
-  console.error("BREVO STATUS:", error.response?.status);
-  console.error("BREVO DATA:", error.response?.data);
+  } catch (error: any) {
+    console.error("BREVO STATUS:", error.response?.status);
+    console.error("BREVO DATA:", error.response?.data);
 
-  throw new Error("Failed to send email OTP.");
-}
+    throw new Error("Failed to send email OTP.");
+  }
 };

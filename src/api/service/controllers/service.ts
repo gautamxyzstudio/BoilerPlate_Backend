@@ -1,64 +1,192 @@
 import { factories } from "@strapi/strapi";
 
+const uid = "api::service.service";
+
 export default factories.createCoreController(
     "api::service.service",
     ({ strapi }) => ({
+
         async create(ctx) {
+            const trx = await strapi.db.transaction();
+
             try {
-                const body = ctx.request.body?.data || ctx.request.body || {};
+                const body = ctx.request.body?.data || ctx.request.body;
 
                 const {
+                    name,
+                    description,
+                    image,
+                    service_category,
+                    estimatedDuration,
+                    displayOrder,
+                    pricingModel,
+
+                    // Flat pricing
                     price,
                     offerPrice,
                     expressDeliveryPrice,
-                    image,
-                    ...serviceData
+
+                    // Variant pricing
+                    variants = [],
                 } = body;
 
-                // Validate required price
-                if (price === undefined || price === null) {
-                    return ctx.badRequest("Price is required.");
+                // ===========================
+                // Validations
+                // ===========================
+
+                if (!name) {
+                    throw new Error("Service name is required.");
                 }
 
+                if (!service_category) {
+                    throw new Error("Service category is required.");
+                }
+
+                if (!estimatedDuration) {
+                    throw new Error("Estimated duration is required.");
+                }
+
+                if (!["flat", "variant"].includes(pricingModel)) {
+                    throw new Error("Invalid pricing model.");
+                }
+
+                if (pricingModel === "flat") {
+                    if (!price) {
+                        throw new Error("Price is required.");
+                    }
+
+                    if (variants.length) {
+                        throw new Error(
+                            "Variants are not allowed for flat pricing."
+                        );
+                    }
+                }
+
+                if (pricingModel === "variant") {
+                    if (price) {
+                        throw new Error(
+                            "Price should not be sent for variant pricing."
+                        );
+                    }
+                }
+
+                // ===========================
                 // Create Service
-                const service = await strapi.documents("api::service.service").create({
+                // ===========================
+
+                const service = await strapi.documents(uid).create({
                     data: {
-                        ...serviceData,
-                        ...(image ? { image } : {}),
+                        name,
+                        description,
+                        image,
+                        service_category,
+                        estimatedDuration,
+                        displayOrder,
+                        pricingModel,
                     },
+                    transaction: trx,
                 });
 
-                // Create Service Pricing
-                await strapi.documents("api::service-pricing.service-pricing").create({
-                    data: {
-                        service: service.documentId,
-                        price,
-                        offerPrice: offerPrice ?? null,
-                        expressDeliveryPrice: expressDeliveryPrice ?? null,
-                        isActive: true,
-                    },
-                });
+                // ===========================
+                // Flat Pricing
+                // ===========================
 
-                // Fetch populated service
-                const createdService = await strapi.documents("api::service.service").findOne({
+                if (pricingModel === "flat") {
+
+                    await strapi
+                        .documents("api::service-pricing.service-pricing")
+                        .create({
+                            data: {
+                                service: service.documentId,
+                                price,
+                                offerPrice,
+                                expressDeliveryPrice,
+                            },
+                            transaction: trx,
+                        });
+
+                }
+
+                // ===========================
+                // Variant Pricing
+                // ===========================
+
+                if (
+                    pricingModel === "variant" &&
+                    variants.length
+                ) {
+
+                    for (const variant of variants) {
+
+                        const createdVariant =
+                            await strapi.documents(
+                                "api::service-varient.service-varient"
+                            ).create({
+                                data: {
+                                    name: variant.name,
+                                    image: variant.image,
+                                    service: service.documentId,
+                                },
+                                transaction: trx,
+                            });
+
+                        await strapi
+                            .documents(
+                                "api::service-pricing.service-pricing"
+                            )
+                            .create({
+                                data: {
+                                    service_varient:
+                                        createdVariant.documentId,
+                                    price: variant.price,
+                                    offerPrice: variant.offerPrice,
+                                    expressDeliveryPrice:
+                                        variant.expressDeliveryPrice,
+                                },
+                                transaction: trx,
+                            });
+
+                    }
+
+                }
+
+                await trx.commit();
+
+                const response = await strapi.documents(uid).findOne({
                     documentId: service.documentId,
-                    populate: {
-                        image: true,
-                        service_category: true,
-                        service_pricings: true,
-                    },
+                    populate:
+                        pricingModel === "flat"
+                            ? {
+                                image: true,
+                                service_category: true,
+                                service_pricings: true,
+                            }
+                            : {
+                                image: true,
+                                service_category: true,
+                                service_varients: {
+                                    populate: {
+                                        image: true,
+                                        service_pricings: true,
+                                    },
+                                },
+                            },
                 });
 
-                ctx.body = {
-                    data: createdService,
+                return {
+                    data: response,
                     message: "Service created successfully.",
                 };
-            } catch (error: any) {
-                strapi.log.error(error);
 
-                return ctx.badRequest(
-                    error?.message || "Failed to create service."
-                );
+            } catch (error) {
+                await trx.rollback();
+
+                const message =
+                    error instanceof Error
+                        ? error.message
+                        : "Unable to create service.";
+
+                return ctx.badRequest(message);
             }
         },
 

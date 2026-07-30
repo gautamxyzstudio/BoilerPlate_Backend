@@ -728,6 +728,43 @@ export interface ApiPendingSignupPendingSignup
   };
 }
 
+export interface ApiResetPasswordSessionResetPasswordSession
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'reset_password_sessions';
+  info: {
+    displayName: 'Reset Password Session';
+    pluralName: 'reset-password-sessions';
+    singularName: 'reset-password-session';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    attempts: Schema.Attribute.Integer;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    identifier: Schema.Attribute.String;
+    identifierType: Schema.Attribute.Enumeration<['email', 'phone']>;
+    lastSentAt: Schema.Attribute.DateTime;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::reset-password-session.reset-password-session'
+    > &
+      Schema.Attribute.Private;
+    otpExpiresAt: Schema.Attribute.DateTime;
+    otpHash: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    resetExpiresAt: Schema.Attribute.DateTime;
+    resetToken: Schema.Attribute.Text;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    verified: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+  };
+}
+
 export interface ApiServiceCategoryServiceCategory
   extends Struct.CollectionTypeSchema {
   collectionName: 'service_categories';
@@ -1469,6 +1506,7 @@ declare module '@strapi/strapi' {
       'api::order-item.order-item': ApiOrderItemOrderItem;
       'api::order.order': ApiOrderOrder;
       'api::pending-signup.pending-signup': ApiPendingSignupPendingSignup;
+      'api::reset-password-session.reset-password-session': ApiResetPasswordSessionResetPasswordSession;
       'api::service-category.service-category': ApiServiceCategoryServiceCategory;
       'api::service-pricing.service-pricing': ApiServicePricingServicePricing;
       'api::service-varient.service-varient': ApiServiceVarientServiceVarient;

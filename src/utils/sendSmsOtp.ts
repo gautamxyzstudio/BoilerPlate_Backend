@@ -7,11 +7,12 @@ const client = twilio(
 
 export const sendSmsOtp = async (
   phone: string,
-  otp: string
+  otp: string,
+  message = "Your verification OTP is"
 ): Promise<void> => {
   try {
     await client.messages.create({
-      body: `Your verification OTP is ${otp}. It is valid for 2 minutes.`,
+      body: `${message} ${otp}. It is valid for 3 minutes.`,
       from: process.env.TWILIO_PHONE_NUMBER,
       to: phone,
     });

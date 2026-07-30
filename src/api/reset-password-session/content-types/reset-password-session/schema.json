@@ -1,0 +1,47 @@
+{
+  "kind": "collectionType",
+  "collectionName": "reset_password_sessions",
+  "info": {
+    "singularName": "reset-password-session",
+    "pluralName": "reset-password-sessions",
+    "displayName": "Reset Password Session"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "identifier": {
+      "type": "string"
+    },
+    "identifierType": {
+      "type": "enumeration",
+      "enum": [
+        "email",
+        "phone"
+      ]
+    },
+    "resetToken": {
+      "type": "text"
+    },
+    "otpHash": {
+      "type": "text"
+    },
+    "otpExpiresAt": {
+      "type": "datetime"
+    },
+    "resetExpiresAt": {
+      "type": "datetime"
+    },
+    "attempts": {
+      "type": "integer"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "lastSentAt": {
+      "type": "datetime"
+    }
+  }
+}
