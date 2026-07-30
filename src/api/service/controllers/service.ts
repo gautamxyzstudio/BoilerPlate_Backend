@@ -194,15 +194,35 @@ export default factories.createCoreController(
             try {
                 const services = await strapi.documents("api::service.service").findMany({
                     ...ctx.query,
-                    populate: {
-                        image: true,
-                        service_category: true,
-                        service_pricings: true,
-                    },
                 });
 
+                const populatedServices = await Promise.all(
+                    services.map((service) =>
+                        strapi.documents("api::service.service").findOne({
+                            documentId: service.documentId,
+                            populate:
+                                service.pricingModel === "flat"
+                                    ? {
+                                        image: true,
+                                        service_category: true,
+                                        service_pricings: true,
+                                    }
+                                    : {
+                                        image: true,
+                                        service_category: true,
+                                        service_varients: {
+                                            populate: {
+                                                image: true,
+                                                service_pricings: true,
+                                            },
+                                        },
+                                    },
+                        })
+                    )
+                );
+
                 ctx.body = {
-                    data: services,
+                    data: populatedServices,
                 };
             } catch (error: any) {
                 strapi.log.error("Error fetching services:", error);
@@ -217,29 +237,43 @@ export default factories.createCoreController(
             try {
                 const { id } = ctx.params;
 
-                const service = await strapi.documents("api::service.service").findFirst({
-                    filters: {
-                        id: {
-                            $eq: Number(id),
-                        },
-                    },
-                    populate: {
-                        image: true,
-                        service_category: true,
-                        service_pricings: true,
-                    },
+                const service = await strapi.documents("api::service.service").findOne({
+                    documentId: id,
                 });
 
                 if (!service) {
                     return ctx.notFound("Service not found.");
                 }
 
+                const response = await strapi.documents("api::service.service").findOne({
+                    documentId: service.documentId,
+                    populate:
+                        service.pricingModel === "flat"
+                            ? {
+                                image: true,
+                                service_category: true,
+                                service_pricings: true,
+                            }
+                            : {
+                                image: true,
+                                service_category: true,
+                                service_varients: {
+                                    populate: {
+                                        image: true,
+                                        service_pricings: true,
+                                    },
+                                },
+                            },
+                });
+
                 ctx.body = {
-                    data: service,
+                    data: response,
                 };
             } catch (error: any) {
                 strapi.log.error("Error fetching service:", error);
-                return ctx.badRequest(error.message);
+                return ctx.badRequest(
+                    error?.message || "Failed to fetch service."
+                );
             }
         },
 
