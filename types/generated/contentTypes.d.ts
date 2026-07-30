@@ -941,7 +941,7 @@ export interface ApiUserProfileUserProfile extends Struct.CollectionTypeSchema {
     singularName: 'user-profile';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     accountStatus: Schema.Attribute.Enumeration<
