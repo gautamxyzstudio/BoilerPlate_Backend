@@ -1,0 +1,66 @@
+{
+  "kind": "collectionType",
+  "collectionName": "order_items",
+  "info": {
+    "singularName": "order-item",
+    "pluralName": "order-items",
+    "displayName": "order items"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "order": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::order.order",
+      "inversedBy": "order_items"
+    },
+    "service": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::service.service",
+      "inversedBy": "order_items"
+    },
+    "service_varient": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::service-varient.service-varient",
+      "inversedBy": "order_items"
+    },
+    "service_pricing": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::service-pricing.service-pricing",
+      "inversedBy": "order_items"
+    },
+    "quantity": {
+      "type": "integer",
+      "required": true,
+      "default": 1,
+      "min": 1
+    },
+    "unitPrice": {
+      "type": "decimal",
+      "required": true
+    },
+    "offerPrice": {
+      "type": "decimal"
+    },
+    "expressDelivery": {
+      "type": "boolean",
+      "default": false
+    },
+    "expressDeliveryPrice": {
+      "type": "decimal"
+    },
+    "totalPrice": {
+      "type": "decimal",
+      "required": true
+    },
+    "remarks": {
+      "type": "text"
+    }
+  }
+}

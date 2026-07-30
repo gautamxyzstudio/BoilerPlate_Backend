@@ -12,25 +12,31 @@
   "pluginOptions": {},
   "attributes": {
     "addressTitle": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "fullAddress": {
-      "type": "text"
+      "type": "text",
+      "required": true
     },
     "landmark": {
       "type": "string"
     },
     "city": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "state": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "postalCode": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "country": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "latitude": {
       "type": "string"
@@ -40,7 +46,7 @@
     },
     "isDefaultAddress": {
       "type": "boolean",
-      "default": true
+      "default": false
     },
     "addressType": {
       "type": "enumeration",
@@ -55,6 +61,18 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "customer_addresses"
+    },
+    "pickup_orders": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order.order",
+      "mappedBy": "pickup_address"
+    },
+    "delivery_orders": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order.order",
+      "mappedBy": "delivery_address"
     }
   }
 }

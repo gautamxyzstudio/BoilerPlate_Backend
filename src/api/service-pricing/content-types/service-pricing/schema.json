@@ -12,17 +12,18 @@
   "pluginOptions": {},
   "attributes": {
     "price": {
-      "type": "integer"
+      "type": "decimal",
+      "required": true
     },
     "offerPrice": {
-      "type": "integer"
+      "type": "decimal"
     },
     "isActive": {
       "type": "boolean",
       "default": true
     },
     "expressDeliveryPrice": {
-      "type": "integer"
+      "type": "decimal"
     },
     "service": {
       "type": "relation",
@@ -30,11 +31,17 @@
       "target": "api::service.service",
       "inversedBy": "service_pricings"
     },
-    "garment_type": {
+    "service_varient": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::garment-type.garment-type",
+      "target": "api::service-varient.service-varient",
       "inversedBy": "service_pricings"
+    },
+    "order_items": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order-item.order-item",
+      "mappedBy": "service_pricing"
     }
   }
 }

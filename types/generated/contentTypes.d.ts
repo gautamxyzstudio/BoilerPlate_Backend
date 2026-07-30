@@ -454,16 +454,17 @@ export interface ApiAddressAddress extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    addressTitle: Schema.Attribute.String;
+    addressTitle: Schema.Attribute.String & Schema.Attribute.Required;
     addressType: Schema.Attribute.Enumeration<['home', 'work', 'other']>;
-    city: Schema.Attribute.String;
-    country: Schema.Attribute.String;
+    city: Schema.Attribute.String & Schema.Attribute.Required;
+    country: Schema.Attribute.String & Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    fullAddress: Schema.Attribute.Text;
+    delivery_orders: Schema.Attribute.Relation<'oneToMany', 'api::order.order'>;
+    fullAddress: Schema.Attribute.Text & Schema.Attribute.Required;
     isDefaultAddress: Schema.Attribute.Boolean &
-      Schema.Attribute.DefaultTo<true>;
+      Schema.Attribute.DefaultTo<false>;
     landmark: Schema.Attribute.String;
     latitude: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -473,9 +474,10 @@ export interface ApiAddressAddress extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     longitude: Schema.Attribute.String;
-    postalCode: Schema.Attribute.String;
+    pickup_orders: Schema.Attribute.Relation<'oneToMany', 'api::order.order'>;
+    postalCode: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
-    state: Schema.Attribute.String;
+    state: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -561,12 +563,65 @@ export interface ApiDriverDocumentDriverDocument
   };
 }
 
-export interface ApiGarmentTypeGarmentType extends Struct.CollectionTypeSchema {
-  collectionName: 'garment_types';
+export interface ApiOrderItemOrderItem extends Struct.CollectionTypeSchema {
+  collectionName: 'order_items';
   info: {
-    displayName: 'Garment Type';
-    pluralName: 'garment-types';
-    singularName: 'garment-type';
+    displayName: 'order items';
+    pluralName: 'order-items';
+    singularName: 'order-item';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    expressDelivery: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    expressDeliveryPrice: Schema.Attribute.Decimal;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::order-item.order-item'
+    > &
+      Schema.Attribute.Private;
+    offerPrice: Schema.Attribute.Decimal;
+    order: Schema.Attribute.Relation<'manyToOne', 'api::order.order'>;
+    publishedAt: Schema.Attribute.DateTime;
+    quantity: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<1>;
+    remarks: Schema.Attribute.Text;
+    service: Schema.Attribute.Relation<'manyToOne', 'api::service.service'>;
+    service_pricing: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::service-pricing.service-pricing'
+    >;
+    service_varient: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::service-varient.service-varient'
+    >;
+    totalPrice: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    unitPrice: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
+  collectionName: 'orders';
+  info: {
+    displayName: 'order';
+    pluralName: 'orders';
+    singularName: 'order';
   };
   options: {
     draftAndPublish: false;
@@ -575,24 +630,59 @@ export interface ApiGarmentTypeGarmentType extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::garment-type.garment-type'
-    > &
-      Schema.Attribute.Private;
-    name: Schema.Attribute.String;
-    publishedAt: Schema.Attribute.DateTime;
-    service: Schema.Attribute.Relation<'manyToOne', 'api::service.service'>;
-    service_pricings: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::service-pricing.service-pricing'
+    delivery_address: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::address.address'
     >;
+    deliveryCharge: Schema.Attribute.Decimal;
+    deliveryDate: Schema.Attribute.Date;
+    deliveryTime: Schema.Attribute.Time;
+    discount: Schema.Attribute.Decimal;
+    grandTotal: Schema.Attribute.Decimal;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::order.order'> &
+      Schema.Attribute.Private;
+    order_items: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::order-item.order-item'
+    >;
+    orderNo: Schema.Attribute.String;
+    orderStatus: Schema.Attribute.Enumeration<
+      [
+        'pending',
+        'confirmed',
+        'picked_up',
+        'processing',
+        'out_for_delivery',
+        'delivered',
+        'cancelled',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
+    paymentMethod: Schema.Attribute.Enumeration<
+      ['upi', 'credit/debit card', 'netbanking', 'cod']
+    >;
+    paymentStatus: Schema.Attribute.Enumeration<
+      ['pending', 'paid', 'failed', 'refunded']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
+    pickup_address: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::address.address'
+    >;
+    pickupDate: Schema.Attribute.Date;
+    pickupTime: Schema.Attribute.Time;
+    publishedAt: Schema.Attribute.DateTime;
+    specialInstruction: Schema.Attribute.Text;
+    subTotal: Schema.Attribute.Decimal;
+    tax: Schema.Attribute.Decimal;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    user_profile: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::user-profile.user-profile'
+    >;
   };
 }
 
@@ -647,14 +737,14 @@ export interface ApiServiceCategoryServiceCategory
     singularName: 'service-category';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
-    displayOrder: Schema.Attribute.Integer;
+    displayOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -663,7 +753,7 @@ export interface ApiServiceCategoryServiceCategory
       'api::service-category.service-category'
     > &
       Schema.Attribute.Private;
-    name: Schema.Attribute.String;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     services: Schema.Attribute.Relation<'oneToMany', 'api::service.service'>;
     updatedAt: Schema.Attribute.DateTime;
@@ -687,11 +777,7 @@ export interface ApiServicePricingServicePricing
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    expressDeliveryPrice: Schema.Attribute.Integer;
-    garment_type: Schema.Attribute.Relation<
-      'manyToOne',
-      'api::garment-type.garment-type'
-    >;
+    expressDeliveryPrice: Schema.Attribute.Decimal;
     isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -699,10 +785,59 @@ export interface ApiServicePricingServicePricing
       'api::service-pricing.service-pricing'
     > &
       Schema.Attribute.Private;
-    offerPrice: Schema.Attribute.Integer;
-    price: Schema.Attribute.Integer;
+    offerPrice: Schema.Attribute.Decimal;
+    order_items: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::order-item.order-item'
+    >;
+    price: Schema.Attribute.Decimal & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     service: Schema.Attribute.Relation<'manyToOne', 'api::service.service'>;
+    service_varient: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::service-varient.service-varient'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiServiceVarientServiceVarient
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'service_varients';
+  info: {
+    displayName: 'Service Varient';
+    pluralName: 'service-varients';
+    singularName: 'service-varient';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    displayOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::service-varient.service-varient'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    order_items: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::order-item.order-item'
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    service: Schema.Attribute.Relation<'manyToOne', 'api::service.service'>;
+    service_pricings: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::service-pricing.service-pricing'
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -724,11 +859,8 @@ export interface ApiServiceService extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
-    estimatedTime: Schema.Attribute.DateTime;
-    garment_types: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::garment-type.garment-type'
-    >;
+    displayOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    estimatedDuration: Schema.Attribute.Integer & Schema.Attribute.Required;
     image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -737,7 +869,14 @@ export interface ApiServiceService extends Struct.CollectionTypeSchema {
       'api::service.service'
     > &
       Schema.Attribute.Private;
-    name: Schema.Attribute.String;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    order_items: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::order-item.order-item'
+    >;
+    pricingModel: Schema.Attribute.Enumeration<['flat', 'variant']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'flat'>;
     publishedAt: Schema.Attribute.DateTime;
     service_category: Schema.Attribute.Relation<
       'manyToOne',
@@ -746,6 +885,10 @@ export interface ApiServiceService extends Struct.CollectionTypeSchema {
     service_pricings: Schema.Attribute.Relation<
       'oneToMany',
       'api::service-pricing.service-pricing'
+    >;
+    service_varients: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::service-varient.service-varient'
     >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -780,6 +923,7 @@ export interface ApiUserProfileUserProfile extends Struct.CollectionTypeSchema {
       'api::user-profile.user-profile'
     > &
       Schema.Attribute.Private;
+    orders: Schema.Attribute.Relation<'oneToMany', 'api::order.order'>;
     phoneNumber: Schema.Attribute.String;
     phoneVerified: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     profileImage: Schema.Attribute.Media<
@@ -1322,10 +1466,12 @@ declare module '@strapi/strapi' {
       'api::address.address': ApiAddressAddress;
       'api::driver-detail.driver-detail': ApiDriverDetailDriverDetail;
       'api::driver-document.driver-document': ApiDriverDocumentDriverDocument;
-      'api::garment-type.garment-type': ApiGarmentTypeGarmentType;
+      'api::order-item.order-item': ApiOrderItemOrderItem;
+      'api::order.order': ApiOrderOrder;
       'api::pending-signup.pending-signup': ApiPendingSignupPendingSignup;
       'api::service-category.service-category': ApiServiceCategoryServiceCategory;
       'api::service-pricing.service-pricing': ApiServicePricingServicePricing;
+      'api::service-varient.service-varient': ApiServiceVarientServiceVarient;
       'api::service.service': ApiServiceService;
       'api::user-profile.user-profile': ApiUserProfileUserProfile;
       'plugin::content-releases.release': PluginContentReleasesRelease;

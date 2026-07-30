@@ -1,10 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "service_categories",
+  "collectionName": "service_varients",
   "info": {
-    "singularName": "service-category",
-    "pluralName": "service-categories",
-    "displayName": "Service Category"
+    "singularName": "service-varient",
+    "pluralName": "service-varients",
+    "displayName": "Service Varient"
   },
   "options": {
     "draftAndPublish": false
@@ -14,9 +14,6 @@
     "name": {
       "type": "string",
       "required": true
-    },
-    "description": {
-      "type": "text"
     },
     "image": {
       "type": "media",
@@ -36,11 +33,23 @@
       "type": "integer",
       "default": 0
     },
-    "services": {
+    "service": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::service.service",
+      "inversedBy": "service_varients"
+    },
+    "service_pricings": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::service.service",
-      "mappedBy": "service_category"
+      "target": "api::service-pricing.service-pricing",
+      "mappedBy": "service_varient"
+    },
+    "order_items": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order-item.order-item",
+      "mappedBy": "service_varient"
     }
   }
 }

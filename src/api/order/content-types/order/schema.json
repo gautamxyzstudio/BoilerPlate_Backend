@@ -1,0 +1,104 @@
+{
+  "kind": "collectionType",
+  "collectionName": "orders",
+  "info": {
+    "singularName": "order",
+    "pluralName": "orders",
+    "displayName": "order"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "orderNo": {
+      "type": "string"
+    },
+    "pickupDate": {
+      "type": "date"
+    },
+    "pickupTime": {
+      "type": "time"
+    },
+    "deliveryDate": {
+      "type": "date"
+    },
+    "deliveryTime": {
+      "type": "time"
+    },
+    "paymentMethod": {
+      "type": "enumeration",
+      "enum": [
+        "upi",
+        "credit/debit card",
+        "netbanking",
+        "cod"
+      ]
+    },
+    "paymentStatus": {
+      "type": "enumeration",
+      "default": "pending",
+      "enum": [
+        "pending",
+        "paid",
+        "failed",
+        "refunded"
+      ]
+    },
+    "orderStatus": {
+      "type": "enumeration",
+      "default": "pending",
+      "enum": [
+        "pending",
+        "confirmed",
+        "picked_up",
+        "processing",
+        "out_for_delivery",
+        "delivered",
+        "cancelled"
+      ]
+    },
+    "subTotal": {
+      "type": "decimal"
+    },
+    "tax": {
+      "type": "decimal"
+    },
+    "discount": {
+      "type": "decimal"
+    },
+    "deliveryCharge": {
+      "type": "decimal"
+    },
+    "grandTotal": {
+      "type": "decimal"
+    },
+    "specialInstruction": {
+      "type": "text"
+    },
+    "pickup_address": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::address.address",
+      "inversedBy": "pickup_orders"
+    },
+    "delivery_address": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::address.address",
+      "inversedBy": "delivery_orders"
+    },
+    "user_profile": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::user-profile.user-profile",
+      "inversedBy": "orders"
+    },
+    "order_items": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order-item.order-item",
+      "mappedBy": "order"
+    }
+  }
+}

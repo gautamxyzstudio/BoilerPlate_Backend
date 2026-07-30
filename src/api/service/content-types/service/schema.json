@@ -12,7 +12,8 @@
   "pluginOptions": {},
   "attributes": {
     "name": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "description": {
       "type": "text"
@@ -31,8 +32,22 @@
       "type": "boolean",
       "default": true
     },
-    "estimatedTime": {
-      "type": "datetime"
+    "estimatedDuration": {
+      "type": "integer",
+      "required": true
+    },
+    "displayOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "pricingModel": {
+      "type": "enumeration",
+      "required": true,
+      "default": "flat",
+      "enum": [
+        "flat",
+        "variant"
+      ]
     },
     "service_category": {
       "type": "relation",
@@ -46,10 +61,16 @@
       "target": "api::service-pricing.service-pricing",
       "mappedBy": "service"
     },
-    "garment_types": {
+    "service_varients": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::garment-type.garment-type",
+      "target": "api::service-varient.service-varient",
+      "mappedBy": "service"
+    },
+    "order_items": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order-item.order-item",
       "mappedBy": "service"
     }
   }
