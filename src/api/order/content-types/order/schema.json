@@ -12,7 +12,8 @@
   "pluginOptions": {},
   "attributes": {
     "orderNo": {
-      "type": "string"
+      "type": "string",
+      "unique": true
     },
     "pickupDate": {
       "type": "date"
@@ -57,6 +58,18 @@
         "delivered",
         "cancelled"
       ]
+    },
+    "appointmentDate": {
+      "type": "date"
+    },
+    "appointmentTime": {
+      "type": "time"
+    },
+    "startedAt": {
+      "type": "datetime"
+    },
+    "completedAt": {
+      "type": "datetime"
     },
     "subTotal": {
       "type": "decimal"

@@ -72,6 +72,13 @@
       "relation": "oneToMany",
       "target": "api::order-item.order-item",
       "mappedBy": "service"
+    },
+    "scheduleType": {
+      "type": "enumeration",
+      "enum": [
+        "pickup_delivery",
+        "appointment"
+      ]
     }
   }
 }

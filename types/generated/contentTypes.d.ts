@@ -571,7 +571,7 @@ export interface ApiOrderItemOrderItem extends Struct.CollectionTypeSchema {
     singularName: 'order-item';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -627,6 +627,9 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    appointmentDate: Schema.Attribute.Date;
+    appointmentTime: Schema.Attribute.Time;
+    completedAt: Schema.Attribute.DateTime;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -646,7 +649,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       'oneToMany',
       'api::order-item.order-item'
     >;
-    orderNo: Schema.Attribute.String;
+    orderNo: Schema.Attribute.String & Schema.Attribute.Unique;
     orderStatus: Schema.Attribute.Enumeration<
       [
         'pending',
@@ -674,6 +677,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     pickupTime: Schema.Attribute.Time;
     publishedAt: Schema.Attribute.DateTime;
     specialInstruction: Schema.Attribute.Text;
+    startedAt: Schema.Attribute.DateTime;
     subTotal: Schema.Attribute.Decimal;
     tax: Schema.Attribute.Decimal;
     updatedAt: Schema.Attribute.DateTime;
@@ -915,6 +919,9 @@ export interface ApiServiceService extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'flat'>;
     publishedAt: Schema.Attribute.DateTime;
+    scheduleType: Schema.Attribute.Enumeration<
+      ['pickup_delivery', 'appointment']
+    >;
     service_category: Schema.Attribute.Relation<
       'manyToOne',
       'api::service-category.service-category'
