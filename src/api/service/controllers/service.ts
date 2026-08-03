@@ -213,19 +213,19 @@ export default factories.createCoreController(
                             populate:
                                 service.pricingModel === "flat"
                                     ? {
-                                        image: true,
+                                        // image: true,
                                         service_category: true,
-                                        service_pricings: true,
+                                        // service_pricings: true,
                                     }
                                     : {
-                                        image: true,
+                                        // image: true,
                                         service_category: true,
-                                        service_varients: {
-                                            populate: {
-                                                image: true,
-                                                service_pricings: true,
-                                            },
-                                        },
+                                        // service_varients: {
+                                        //     populate: {
+                                        //         image: true,
+                                                // service_pricings: true,
+                                        //     },
+                                        // },
                                     },
                         })
                     )

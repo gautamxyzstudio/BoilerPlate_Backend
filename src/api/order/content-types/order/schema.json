@@ -30,9 +30,7 @@
     "paymentMethod": {
       "type": "enumeration",
       "enum": [
-        "upi",
-        "credit/debit card",
-        "netbanking",
+        "online",
         "cod"
       ]
     },
@@ -51,12 +49,11 @@
       "default": "pending",
       "enum": [
         "pending",
-        "confirmed",
-        "picked_up",
-        "processing",
+        "shipped",
         "out_for_delivery",
         "delivered",
-        "cancelled"
+        "cancelled",
+        "refunded"
       ]
     },
     "appointmentDate": {

@@ -10,7 +10,7 @@ export default {
         },
         {
             method: "POST",
-            path: "/verify-reset-otp",
+            path: "/verify-otp",
             handler: "forgot-password.verifyResetOtp",
             config: {
                 auth: false,
@@ -26,7 +26,7 @@ export default {
         },
         {
             method: "POST",
-            path: "/resend-reset-otp",
+            path: "/resend-otp",
             handler: "forgot-password.resendResetOtp",
             config: {
                 auth: false,

@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2026-08-03T06:19:41.669Z"
+    "x-generation-date": "2026-08-03T08:16:20.513Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -7936,9 +7936,7 @@
                 "paymentMethod": {
                   "type": "string",
                   "enum": [
-                    "upi",
-                    "credit/debit card",
-                    "netbanking",
+                    "online",
                     "cod"
                   ]
                 },
@@ -7955,12 +7953,11 @@
                   "type": "string",
                   "enum": [
                     "pending",
-                    "confirmed",
-                    "picked_up",
-                    "processing",
+                    "shipped",
                     "out_for_delivery",
                     "delivered",
-                    "cancelled"
+                    "cancelled",
+                    "refunded"
                   ]
                 },
                 "appointmentDate": {
@@ -13372,9 +13369,7 @@
                         "paymentMethod": {
                           "type": "string",
                           "enum": [
-                            "upi",
-                            "credit/debit card",
-                            "netbanking",
+                            "online",
                             "cod"
                           ]
                         },
@@ -13391,12 +13386,11 @@
                           "type": "string",
                           "enum": [
                             "pending",
-                            "confirmed",
-                            "picked_up",
-                            "processing",
+                            "shipped",
                             "out_for_delivery",
                             "delivered",
-                            "cancelled"
+                            "cancelled",
+                            "refunded"
                           ]
                         },
                         "appointmentDate": {
@@ -17506,9 +17500,7 @@
                             "paymentMethod": {
                               "type": "string",
                               "enum": [
-                                "upi",
-                                "credit/debit card",
-                                "netbanking",
+                                "online",
                                 "cod"
                               ]
                             },
@@ -17525,12 +17517,11 @@
                               "type": "string",
                               "enum": [
                                 "pending",
-                                "confirmed",
-                                "picked_up",
-                                "processing",
+                                "shipped",
                                 "out_for_delivery",
                                 "delivered",
-                                "cancelled"
+                                "cancelled",
+                                "refunded"
                               ]
                             },
                             "appointmentDate": {
@@ -19815,9 +19806,7 @@
               "paymentMethod": {
                 "type": "string",
                 "enum": [
-                  "upi",
-                  "credit/debit card",
-                  "netbanking",
+                  "online",
                   "cod"
                 ]
               },
@@ -19834,12 +19823,11 @@
                 "type": "string",
                 "enum": [
                   "pending",
-                  "confirmed",
-                  "picked_up",
-                  "processing",
+                  "shipped",
                   "out_for_delivery",
                   "delivered",
-                  "cancelled"
+                  "cancelled",
+                  "refunded"
                 ]
               },
               "appointmentDate": {
@@ -20025,9 +20013,7 @@
           "paymentMethod": {
             "type": "string",
             "enum": [
-              "upi",
-              "credit/debit card",
-              "netbanking",
+              "online",
               "cod"
             ]
           },
@@ -20044,12 +20030,11 @@
             "type": "string",
             "enum": [
               "pending",
-              "confirmed",
-              "picked_up",
-              "processing",
+              "shipped",
               "out_for_delivery",
               "delivered",
-              "cancelled"
+              "cancelled",
+              "refunded"
             ]
           },
           "appointmentDate": {
@@ -20188,9 +20173,7 @@
                     "paymentMethod": {
                       "type": "string",
                       "enum": [
-                        "upi",
-                        "credit/debit card",
-                        "netbanking",
+                        "online",
                         "cod"
                       ]
                     },
@@ -20207,12 +20190,11 @@
                       "type": "string",
                       "enum": [
                         "pending",
-                        "confirmed",
-                        "picked_up",
-                        "processing",
+                        "shipped",
                         "out_for_delivery",
                         "delivered",
-                        "cancelled"
+                        "cancelled",
+                        "refunded"
                       ]
                     },
                     "appointmentDate": {
@@ -24155,9 +24137,7 @@
               "paymentMethod": {
                 "type": "string",
                 "enum": [
-                  "upi",
-                  "credit/debit card",
-                  "netbanking",
+                  "online",
                   "cod"
                 ]
               },
@@ -24174,12 +24154,11 @@
                 "type": "string",
                 "enum": [
                   "pending",
-                  "confirmed",
-                  "picked_up",
-                  "processing",
+                  "shipped",
                   "out_for_delivery",
                   "delivered",
-                  "cancelled"
+                  "cancelled",
+                  "refunded"
                 ]
               },
               "appointmentDate": {
@@ -32119,9 +32098,7 @@
                                         "paymentMethod": {
                                           "type": "string",
                                           "enum": [
-                                            "upi",
-                                            "credit/debit card",
-                                            "netbanking",
+                                            "online",
                                             "cod"
                                           ]
                                         },
@@ -32138,12 +32115,11 @@
                                           "type": "string",
                                           "enum": [
                                             "pending",
-                                            "confirmed",
-                                            "picked_up",
-                                            "processing",
+                                            "shipped",
                                             "out_for_delivery",
                                             "delivered",
-                                            "cancelled"
+                                            "cancelled",
+                                            "refunded"
                                           ]
                                         },
                                         "appointmentDate": {
@@ -36380,9 +36356,7 @@
                                     "paymentMethod": {
                                       "type": "string",
                                       "enum": [
-                                        "upi",
-                                        "credit/debit card",
-                                        "netbanking",
+                                        "online",
                                         "cod"
                                       ]
                                     },
@@ -36399,12 +36373,11 @@
                                       "type": "string",
                                       "enum": [
                                         "pending",
-                                        "confirmed",
-                                        "picked_up",
-                                        "processing",
+                                        "shipped",
                                         "out_for_delivery",
                                         "delivered",
-                                        "cancelled"
+                                        "cancelled",
+                                        "refunded"
                                       ]
                                     },
                                     "appointmentDate": {
@@ -40340,9 +40313,7 @@
                                   "paymentMethod": {
                                     "type": "string",
                                     "enum": [
-                                      "upi",
-                                      "credit/debit card",
-                                      "netbanking",
+                                      "online",
                                       "cod"
                                     ]
                                   },
@@ -40359,12 +40330,11 @@
                                     "type": "string",
                                     "enum": [
                                       "pending",
-                                      "confirmed",
-                                      "picked_up",
-                                      "processing",
+                                      "shipped",
                                       "out_for_delivery",
                                       "delivered",
-                                      "cancelled"
+                                      "cancelled",
+                                      "refunded"
                                     ]
                                   },
                                   "appointmentDate": {
@@ -44512,9 +44482,7 @@
                                   "paymentMethod": {
                                     "type": "string",
                                     "enum": [
-                                      "upi",
-                                      "credit/debit card",
-                                      "netbanking",
+                                      "online",
                                       "cod"
                                     ]
                                   },
@@ -44531,12 +44499,11 @@
                                     "type": "string",
                                     "enum": [
                                       "pending",
-                                      "confirmed",
-                                      "picked_up",
-                                      "processing",
+                                      "shipped",
                                       "out_for_delivery",
                                       "delivered",
-                                      "cancelled"
+                                      "cancelled",
+                                      "refunded"
                                     ]
                                   },
                                   "appointmentDate": {
@@ -48441,9 +48408,7 @@
                         "paymentMethod": {
                           "type": "string",
                           "enum": [
-                            "upi",
-                            "credit/debit card",
-                            "netbanking",
+                            "online",
                             "cod"
                           ]
                         },
@@ -48460,12 +48425,11 @@
                           "type": "string",
                           "enum": [
                             "pending",
-                            "confirmed",
-                            "picked_up",
-                            "processing",
+                            "shipped",
                             "out_for_delivery",
                             "delivered",
-                            "cancelled"
+                            "cancelled",
+                            "refunded"
                           ]
                         },
                         "appointmentDate": {

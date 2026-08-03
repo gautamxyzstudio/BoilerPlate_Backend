@@ -653,18 +653,15 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     orderStatus: Schema.Attribute.Enumeration<
       [
         'pending',
-        'confirmed',
-        'picked_up',
-        'processing',
+        'shipped',
         'out_for_delivery',
         'delivered',
         'cancelled',
+        'refunded',
       ]
     > &
       Schema.Attribute.DefaultTo<'pending'>;
-    paymentMethod: Schema.Attribute.Enumeration<
-      ['upi', 'credit/debit card', 'netbanking', 'cod']
-    >;
+    paymentMethod: Schema.Attribute.Enumeration<['online', 'cod']>;
     paymentStatus: Schema.Attribute.Enumeration<
       ['pending', 'paid', 'failed', 'refunded']
     > &
