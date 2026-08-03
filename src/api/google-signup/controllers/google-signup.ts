@@ -65,7 +65,7 @@ export default {
               email,
               password: generatedPassword,
               role: customerRole.id,
-              provider: "google",
+              provider: "local",
               confirmed: true,
             },
             populate: ["role"],
