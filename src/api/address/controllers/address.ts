@@ -3,6 +3,7 @@
  */
 
 import { factories } from "@strapi/strapi";
+import userProfile from "../../user-profile/services/user-profile";
 
 export default factories.createCoreController(
     "api::address.address",
@@ -15,6 +16,20 @@ export default factories.createCoreController(
                 return ctx.unauthorized("You must be logged in.");
             }
 
+            const userProfile = await strapi.db
+                .query("api::user-profile.user-profile")
+                .findOne({
+                    where: {
+                        users_permissions_user: {
+                            id: user.id,
+                        },
+                    },
+                });
+
+            if (!userProfile) {
+                return ctx.badRequest("User profile not found.");
+            }
+
             const body = ctx.request.body?.data || ctx.request.body;
 
             // Check duplicate address
@@ -22,8 +37,8 @@ export default factories.createCoreController(
                 "api::address.address",
                 {
                     filters: {
-                        users_permissions_user: {
-                            id: user.id,
+                        user_profile: {
+                            id: userProfile.id,
                         },
                         fullAddress: body.fullAddress,
                         city: body.city,
@@ -44,8 +59,8 @@ export default factories.createCoreController(
                 "api::address.address",
                 {
                     filters: {
-                        users_permissions_user: {
-                            id: user.id,
+                        user_profile: {
+                            id: userProfile.id,
                         },
                     },
                     limit: 1,
@@ -59,7 +74,7 @@ export default factories.createCoreController(
                 {
                     data: {
                         ...body,
-                        users_permissions_user: user.id,
+                        user_profile: userProfile.id,
                         isDefaultAddress: isFirstAddress,
                         publishedAt: new Date(),
                     },
@@ -77,11 +92,25 @@ export default factories.createCoreController(
                 return ctx.unauthorized("You must be logged in.");
             }
 
+            const userProfile = await strapi.db
+                .query("api::user-profile.user-profile")
+                .findOne({
+                    where: {
+                        users_permissions_user: {
+                            id: user.id,
+                        },
+                    },
+                });
+
+            if (!userProfile) {
+                return ctx.badRequest("User profile not found.");
+            }
+
             const addresses = await strapi.entityService.findMany(
                 "api::address.address" as any,
                 {
                     filters: {
-                        users_permissions_user: user.id,
+                        user_profile: userProfile.id,
                     },
                     populate: "*",
                     sort: { createdAt: "desc" },
@@ -98,6 +127,20 @@ export default factories.createCoreController(
                 return ctx.unauthorized("You must be logged in.");
             }
 
+            const userProfile = await strapi.db
+                .query("api::user-profile.user-profile")
+                .findOne({
+                    where: {
+                        users_permissions_user: {
+                            id: user.id,
+                        },
+                    },
+                });
+
+            if (!userProfile) {
+                return ctx.badRequest("User profile not found.");
+            }
+
             const { id } = ctx.params;
             const body = ctx.request.body?.data || ctx.request.body;
 
@@ -107,7 +150,7 @@ export default factories.createCoreController(
                 id,
                 {
                     populate: {
-                        users_permissions_user: true,
+                        user_profile: true,
                     },
                 }
             );
@@ -117,7 +160,7 @@ export default factories.createCoreController(
             }
 
             // Ensure the address belongs to the logged-in user
-            if (address.users_permissions_user?.id !== user.id) {
+            if ((address.user_profile?.id !== userProfile.id)) {
                 return ctx.forbidden("You are not allowed to update this address.");
             }
 
@@ -142,6 +185,20 @@ export default factories.createCoreController(
                 return ctx.unauthorized("You must be logged in.");
             }
 
+            const userProfile = await strapi.db
+                .query("api::user-profile.user-profile")
+                .findOne({
+                    where: {
+                        users_permissions_user: {
+                            id: user.id,
+                        },
+                    },
+                });
+
+            if (!userProfile) {
+                return ctx.badRequest("User profile not found.");
+            }
+
             const { id } = ctx.params;
 
             // Find the address
@@ -150,7 +207,7 @@ export default factories.createCoreController(
                 id,
                 {
                     populate: {
-                        users_permissions_user: true,
+                        user_profile: true,
                     },
                 }
             );
@@ -160,7 +217,7 @@ export default factories.createCoreController(
             }
 
             // Check ownership
-            if (address.users_permissions_user?.id !== user.id) {
+            if ((address.user_profile?.id !== userProfile.id)) {
                 return ctx.forbidden("You are not allowed to delete this address.");
             }
 
@@ -180,6 +237,20 @@ export default factories.createCoreController(
                 return ctx.unauthorized("You must be logged in.");
             }
 
+            const userProfile = await strapi.db
+                .query("api::user-profile.user-profile")
+                .findOne({
+                    where: {
+                        users_permissions_user: {
+                            id: user.id,
+                        },
+                    },
+                });
+
+            if (!userProfile) {
+                return ctx.badRequest("User profile not found.");
+            }
+
             const { id } = ctx.params;
 
             // Check if the address exists and belongs to the logged-in user
@@ -188,7 +259,7 @@ export default factories.createCoreController(
                 id,
                 {
                     populate: {
-                        users_permissions_user: true,
+                        user_profile: true,
                     },
                 }
             );
@@ -213,9 +284,7 @@ export default factories.createCoreController(
                 "api::address.address",
                 {
                     filters: {
-                        users_permissions_user: {
-                            id: user.id,
-                        },
+                        user_profile: userProfile.id,
                     },
                 }
             );
@@ -253,13 +322,25 @@ export default factories.createCoreController(
                 return ctx.unauthorized("You must be logged in.");
             }
 
+            const userProfile = await strapi.db
+                .query("api::user-profile.user-profile")
+                .findOne({
+                    where: {
+                        users_permissions_user: {
+                            id: user.id,
+                        },
+                    },
+                });
+
+            if (!userProfile) {
+                return ctx.badRequest("User profile not found.");
+            }
+
             const addresses = await strapi.entityService.findMany(
                 "api::address.address",
                 {
                     filters: {
-                        users_permissions_user: {
-                            id: user.id,
-                        },
+                        user_profile: userProfile.id,
                         isDefaultAddress: true,
                     },
                     populate: "*",

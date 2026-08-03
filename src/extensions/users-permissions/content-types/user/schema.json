@@ -75,12 +75,6 @@
       "target": "api::user-profile.user-profile",
       "mappedBy": "users_permissions_user"
     },
-    "customer_addresses": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::address.address",
-      "mappedBy": "users_permissions_user"
-    },
     "driver_detail": {
       "type": "relation",
       "relation": "oneToOne",

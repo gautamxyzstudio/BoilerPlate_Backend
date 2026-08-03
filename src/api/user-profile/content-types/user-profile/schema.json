@@ -68,6 +68,12 @@
       "relation": "oneToMany",
       "target": "api::order.order",
       "mappedBy": "user_profile"
+    },
+    "customer_addresses": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::address.address",
+      "mappedBy": "user_profile"
     }
   }
 }

@@ -56,12 +56,6 @@
         "other"
       ]
     },
-    "users_permissions_user": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "customer_addresses"
-    },
     "pickup_orders": {
       "type": "relation",
       "relation": "oneToMany",
@@ -73,6 +67,12 @@
       "relation": "oneToMany",
       "target": "api::order.order",
       "mappedBy": "delivery_address"
+    },
+    "user_profile": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::user-profile.user-profile",
+      "inversedBy": "customer_addresses"
     }
   }
 }

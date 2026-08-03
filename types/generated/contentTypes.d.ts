@@ -481,9 +481,9 @@ export interface ApiAddressAddress extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    users_permissions_user: Schema.Attribute.Relation<
+    user_profile: Schema.Attribute.Relation<
       'manyToOne',
-      'plugin::users-permissions.user'
+      'api::user-profile.user-profile'
     >;
   };
 }
@@ -957,6 +957,10 @@ export interface ApiUserProfileUserProfile extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    customer_addresses: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::address.address'
+    >;
     email: Schema.Attribute.Email;
     emailVerified: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     fcmToken: Schema.Attribute.String;
@@ -1449,10 +1453,6 @@ export interface PluginUsersPermissionsUser
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    customer_addresses: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::address.address'
-    >;
     driver_detail: Schema.Attribute.Relation<
       'oneToOne',
       'api::driver-detail.driver-detail'

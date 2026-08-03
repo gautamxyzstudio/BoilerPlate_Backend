@@ -91,7 +91,7 @@ export default factories.createCoreController(
                     .findOne({
                         documentId: pickup_address,
                         populate: {
-                            users_permissions_user: true,
+                            user_profile: true,
                         },
                     });
 
@@ -111,7 +111,7 @@ export default factories.createCoreController(
                         .findOne({
                             documentId: delivery_address,
                             populate: {
-                                users_permissions_user: true,
+                                user_profile: true,
                             },
                         });
 
@@ -125,7 +125,7 @@ export default factories.createCoreController(
                 // To Logged-in User
                 // ===============================
 
-                if (pickupAddress.users_permissions_user?.id !== user.id) {
+                if (pickupAddress.user_profile?.id !== userProfile.id) {
                     return ctx.forbidden(
                         "You are not allowed to use this pickup address."
                     );
@@ -133,7 +133,7 @@ export default factories.createCoreController(
 
                 if (
                     deliveryAddress &&
-                    deliveryAddress.users_permissions_user?.id !== user.id
+                    deliveryAddress.user_profile?.id !== userProfile.id
                 ) {
                     return ctx.forbidden(
                         "You are not allowed to use this delivery address."
