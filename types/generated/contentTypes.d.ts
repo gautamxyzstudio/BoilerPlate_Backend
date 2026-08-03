@@ -958,10 +958,11 @@ export interface ApiUserProfileUserProfile extends Struct.CollectionTypeSchema {
       'oneToMany',
       'api::address.address'
     >;
-    email: Schema.Attribute.Email;
+    customerId: Schema.Attribute.String & Schema.Attribute.Unique;
+    email: Schema.Attribute.Email & Schema.Attribute.Required;
     emailVerified: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     fcmToken: Schema.Attribute.String;
-    fullName: Schema.Attribute.String;
+    fullName: Schema.Attribute.String & Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',

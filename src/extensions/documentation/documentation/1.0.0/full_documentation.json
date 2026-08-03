@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2026-08-03T08:16:20.513Z"
+    "x-generation-date": "2026-08-03T10:42:25.867Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -8115,6 +8115,9 @@
                         "fullName": {
                           "type": "string"
                         },
+                        "customerId": {
+                          "type": "string"
+                        },
                         "phoneNumber": {
                           "type": "string"
                         },
@@ -12810,6 +12813,9 @@
                   "fullName": {
                     "type": "string"
                   },
+                  "customerId": {
+                    "type": "string"
+                  },
                   "phoneNumber": {
                     "type": "string"
                   },
@@ -17236,6 +17242,9 @@
                       "fullName": {
                         "type": "string"
                       },
+                      "customerId": {
+                        "type": "string"
+                      },
                       "phoneNumber": {
                         "type": "string"
                       },
@@ -20290,6 +20299,9 @@
                           "type": "string"
                         },
                         "fullName": {
+                          "type": "string"
+                        },
+                        "customerId": {
                           "type": "string"
                         },
                         "phoneNumber": {
@@ -24314,6 +24326,9 @@
                         "type": "string"
                       },
                       "fullName": {
+                        "type": "string"
+                      },
+                      "customerId": {
                         "type": "string"
                       },
                       "phoneNumber": {
@@ -32277,6 +32292,9 @@
                                                 "fullName": {
                                                   "type": "string"
                                                 },
+                                                "customerId": {
+                                                  "type": "string"
+                                                },
                                                 "phoneNumber": {
                                                   "type": "string"
                                                 },
@@ -36535,6 +36553,9 @@
                                             "fullName": {
                                               "type": "string"
                                             },
+                                            "customerId": {
+                                              "type": "string"
+                                            },
                                             "phoneNumber": {
                                               "type": "string"
                                             },
@@ -40490,6 +40511,9 @@
                                             "type": "string"
                                           },
                                           "fullName": {
+                                            "type": "string"
+                                          },
+                                          "customerId": {
                                             "type": "string"
                                           },
                                           "phoneNumber": {
@@ -44661,6 +44685,9 @@
                                           "fullName": {
                                             "type": "string"
                                           },
+                                          "customerId": {
+                                            "type": "string"
+                                          },
                                           "phoneNumber": {
                                             "type": "string"
                                           },
@@ -46538,9 +46565,16 @@
         ],
         "properties": {
           "data": {
+            "required": [
+              "fullName",
+              "email"
+            ],
             "type": "object",
             "properties": {
               "fullName": {
+                "type": "string"
+              },
+              "customerId": {
                 "type": "string"
               },
               "phoneNumber": {
@@ -46683,6 +46717,10 @@
       },
       "UserProfile": {
         "type": "object",
+        "required": [
+          "fullName",
+          "email"
+        ],
         "properties": {
           "id": {
             "oneOf": [
@@ -46698,6 +46736,9 @@
             "type": "string"
           },
           "fullName": {
+            "type": "string"
+          },
+          "customerId": {
             "type": "string"
           },
           "phoneNumber": {
@@ -48142,6 +48183,9 @@
                     "type": "string"
                   },
                   "fullName": {
+                    "type": "string"
+                  },
+                  "customerId": {
                     "type": "string"
                   },
                   "phoneNumber": {

@@ -12,13 +12,19 @@
   "pluginOptions": {},
   "attributes": {
     "fullName": {
-      "type": "string"
+      "type": "string",
+      "required": true
+    },
+    "customerId": {
+      "type": "string",
+      "unique": true
     },
     "phoneNumber": {
       "type": "string"
     },
     "email": {
-      "type": "email"
+      "type": "email",
+      "required": true
     },
     "profileImage": {
       "type": "media",

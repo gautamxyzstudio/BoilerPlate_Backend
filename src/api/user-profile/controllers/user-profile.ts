@@ -5,6 +5,25 @@
 import { factories } from "@strapi/strapi";
 import { normalizeIdentifier } from "../../../utils/normalizeIdentifier";
 
+const generateCustomerId = async () => {
+    let customerId;
+    let exists = true;
+
+    while (exists) {
+        customerId = `K3-${Math.floor(100000 + Math.random() * 900000)}`;
+
+        exists = await strapi.db
+            .query("api::user-profile.user-profile")
+            .findOne({
+                where: {
+                    customerId,
+                },
+            });
+    }
+
+    return customerId;
+};
+
 export default factories.createCoreController(
     "api::user-profile.user-profile",
     ({ strapi }) => ({
@@ -99,8 +118,11 @@ export default factories.createCoreController(
                     }
                 }
 
+                const customerId = await generateCustomerId();
+
                 const data = {
                     ...body,
+                    customerId,
                     email: normalizedEmail,
                     phoneNumber: normalizedPhoneNumber,
                     users_permissions_user: user.id,

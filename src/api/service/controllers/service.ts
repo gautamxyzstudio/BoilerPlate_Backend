@@ -223,7 +223,7 @@ export default factories.createCoreController(
                                         // service_varients: {
                                         //     populate: {
                                         //         image: true,
-                                                // service_pricings: true,
+                                        // service_pricings: true,
                                         //     },
                                         // },
                                     },
@@ -886,6 +886,58 @@ export default factories.createCoreController(
 
                 return ctx.badRequest(
                     error?.message || "Failed to delete service."
+                );
+            }
+        },
+
+        async findServiceByName(ctx) {
+            try {
+                const { name } = ctx.params;
+
+                const service = await strapi
+                    .documents("api::service.service")
+                    .findFirst({
+                        filters: {
+                            name: {
+                                $eqi: name,
+                            },
+                        },
+                    });
+
+                if (!service) {
+                    return ctx.notFound("Service not found.");
+                }
+
+                const response = await strapi
+                    .documents("api::service.service")
+                    .findOne({
+                        documentId: service.documentId,
+                        populate:
+                            service.pricingModel === "flat"
+                                ? {
+                                    image: true,
+                                    service_category: true,
+                                    service_pricings: true,
+                                }
+                                : {
+                                    image: true,
+                                    service_category: true,
+                                    service_varients: {
+                                        populate: {
+                                            image: true,
+                                            service_pricings: true,
+                                        },
+                                    },
+                                },
+                    });
+
+                ctx.body = {
+                    data: response,
+                };
+            } catch (error: any) {
+                strapi.log.error("Error fetching service:", error);
+                return ctx.badRequest(
+                    error?.message || "Failed to fetch service."
                 );
             }
         }
