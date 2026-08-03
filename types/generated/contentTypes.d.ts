@@ -661,6 +661,10 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       ]
     > &
       Schema.Attribute.DefaultTo<'pending'>;
+    payment_collections: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::payment-collection.payment-collection'
+    >;
     paymentMethod: Schema.Attribute.Enumeration<['online', 'cod']>;
     paymentStatus: Schema.Attribute.Enumeration<
       ['pending', 'paid', 'failed', 'refunded']
@@ -684,6 +688,46 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       'manyToOne',
       'api::user-profile.user-profile'
     >;
+  };
+}
+
+export interface ApiPaymentCollectionPaymentCollection
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'payment_collections';
+  info: {
+    displayName: 'Payment Collection';
+    pluralName: 'payment-collections';
+    singularName: 'payment-collection';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    amount: Schema.Attribute.Decimal;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    gatewayOrderId: Schema.Attribute.String;
+    gatewayPaymentId: Schema.Attribute.String;
+    gatewayResponse: Schema.Attribute.JSON;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::payment-collection.payment-collection'
+    > &
+      Schema.Attribute.Private;
+    order: Schema.Attribute.Relation<'manyToOne', 'api::order.order'>;
+    paymentDate: Schema.Attribute.DateTime;
+    paymentUrl: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<
+      ['pending', 'paid', 'failed', 'expired', 'cancelled', 'refunded']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
+    transactionId: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -1510,6 +1554,7 @@ declare module '@strapi/strapi' {
       'api::driver-document.driver-document': ApiDriverDocumentDriverDocument;
       'api::order-item.order-item': ApiOrderItemOrderItem;
       'api::order.order': ApiOrderOrder;
+      'api::payment-collection.payment-collection': ApiPaymentCollectionPaymentCollection;
       'api::pending-signup.pending-signup': ApiPendingSignupPendingSignup;
       'api::reset-password-session.reset-password-session': ApiResetPasswordSessionResetPasswordSession;
       'api::service-category.service-category': ApiServiceCategoryServiceCategory;

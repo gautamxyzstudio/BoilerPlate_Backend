@@ -4,6 +4,8 @@
 
 import { factories } from "@strapi/strapi";
 import crypto from "crypto";
+import axios from "axios";
+import { sendOrderConfirmationEmail } from "../../../utils/sendOrderConfirmationEmail";
 
 export default factories.createCoreController(
     "api::order.order",
@@ -46,9 +48,7 @@ export default factories.createCoreController(
                 }
 
                 const allowedPaymentMethods = [
-                    "upi",
-                    "credit/debit card",
-                    "netbanking",
+                    "online",
                     "cod",
                 ];
 
@@ -360,16 +360,27 @@ export default factories.createCoreController(
 
                     preparedOrderItems.push({
                         service: service.documentId,
+                        serviceName: service.name,
+
                         service_varient: variant?.documentId || null,
+                        variantName: variant?.name || null,
+
                         service_pricing: pricing.documentId,
+
                         quantity,
+
                         unitPrice,
+
                         offerPrice,
+
                         expressDelivery: !!item.expressDelivery,
+
                         expressDeliveryPrice: item.expressDelivery
                             ? expressDeliveryPrice
                             : 0,
+
                         totalPrice: itemTotal,
+
                         remarks: item.remarks || null,
                     });
                 }
@@ -467,6 +478,9 @@ export default factories.createCoreController(
                         transaction: trx,
                     });
 
+                let paymentCollection: any = null;
+                let paymentUrl: string | null = null;
+
                 // ===============================================
                 // Create Order Items
                 // ===============================================
@@ -507,6 +521,61 @@ export default factories.createCoreController(
 
                 await trx.commit();
 
+                if (paymentMethod === "online") {
+                    paymentCollection = await strapi
+                        .documents("api::payment-collection.payment-collection")
+                        .create({
+                            data: {
+                                order: createdOrder.documentId,
+                                amount: grandTotal,
+                                status: "pending",
+                            },
+                            transaction: trx,
+                        });
+
+                    console.log("Payment Collection:", paymentCollection);
+                }
+
+                if (paymentMethod === "online") {
+
+                    const response = await axios.post(
+                        "https://upigateway.dev/api/create-order",
+                        {
+                            customer_mobile: user.phone,
+                            user_token: process.env.UPI_GATEWAY_TOKEN,
+                            amount: grandTotal.toString(),
+                            order_id: orderNo,
+                            redirect_url: `${process.env.FRONTEND_URL}/payment-success`,
+                            remark1: orderNo,
+                            remark2: createdOrder.documentId,
+                        },
+                        {
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    );
+
+                    const result = response.data;
+                    console.log(result);
+
+                    if (!result.status) {
+                        throw new Error(result.message || "Unable to create payment.");
+                    }
+
+                    paymentUrl = result.result.payment_url;
+
+                    await strapi.documents("api::payment-collection.payment-collection").update({
+                        documentId: paymentCollection.documentId,
+                        data: {
+                            gatewayOrderId: result.result.orderId,
+                            paymentUrl: result.result.payment_url,
+                            gatewayResponse: result,
+                        },
+                    });
+
+                }
+
                 // ===============================================
                 // Return Complete Order
                 // ===============================================
@@ -533,9 +602,20 @@ export default factories.createCoreController(
                         },
                     });
 
+                if (paymentMethod === "cod") {
+                    await sendOrderConfirmationEmail(
+                        userProfile.email,
+                        userProfile.fullName,
+                        orderNo,
+                        grandTotal,
+                        paymentMethod,
+                        preparedOrderItems
+                    );
+                }
                 return ctx.send({
                     message: "Order created successfully.",
                     data: order,
+                    paymentUrl,
                 });
 
             } catch (error: any) {

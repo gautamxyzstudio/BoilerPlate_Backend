@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "payment_collections",
+  "info": {
+    "singularName": "payment-collection",
+    "pluralName": "payment-collections",
+    "displayName": "Payment Collection"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "order": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::order.order",
+      "inversedBy": "payment_collections"
+    },
+    "transactionId": {
+      "type": "string"
+    },
+    "gatewayOrderId": {
+      "type": "string"
+    },
+    "gatewayPaymentId": {
+      "type": "string"
+    },
+    "paymentUrl": {
+      "type": "text"
+    },
+    "amount": {
+      "type": "decimal"
+    },
+    "status": {
+      "type": "enumeration",
+      "default": "pending",
+      "enum": [
+        "pending",
+        "paid",
+        "failed",
+        "expired",
+        "cancelled",
+        "refunded"
+      ]
+    },
+    "paymentDate": {
+      "type": "datetime"
+    },
+    "gatewayResponse": {
+      "type": "json"
+    }
+  }
+}

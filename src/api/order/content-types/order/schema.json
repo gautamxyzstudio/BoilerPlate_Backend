@@ -109,6 +109,12 @@
       "relation": "oneToMany",
       "target": "api::order-item.order-item",
       "mappedBy": "order"
+    },
+    "payment_collections": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::payment-collection.payment-collection",
+      "mappedBy": "order"
     }
   }
 }
