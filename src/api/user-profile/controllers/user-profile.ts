@@ -171,7 +171,7 @@ export default factories.createCoreController(
             }
         },
 
-        async update(ctx) {
+        async updateMe(ctx) {
             try {
                 const user = ctx.state.user;
 
@@ -194,18 +194,6 @@ export default factories.createCoreController(
 
                 if (!existingProfile) {
                     return ctx.notFound("User profile not found.");
-                }
-
-                // Prevent updating another user's profile
-                const requestedProfileId = Number(ctx.params.id);
-
-                if (
-                    requestedProfileId &&
-                    requestedProfileId !== existingProfile.id
-                ) {
-                    return ctx.forbidden(
-                        "You are not allowed to update another user's profile."
-                    );
                 }
 
                 // Normalize phone number

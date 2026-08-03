@@ -70,7 +70,6 @@ export default {
 
       // Return response
       return ctx.send({
-        success: true,
         jwt,
         user,
       });
