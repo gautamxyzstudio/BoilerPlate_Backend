@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2026-08-03T13:04:12.428Z"
+    "x-generation-date": "2026-08-04T07:01:14.413Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -8206,7 +8206,7 @@
         "properties": {
           "data": {
             "required": [
-              "addressTitle",
+              "streetAddress",
               "fullAddress",
               "city",
               "state",
@@ -8215,7 +8215,7 @@
             ],
             "type": "object",
             "properties": {
-              "addressTitle": {
+              "streetAddress": {
                 "type": "string"
               },
               "fullAddress": {
@@ -8351,7 +8351,7 @@
       "Address": {
         "type": "object",
         "required": [
-          "addressTitle",
+          "streetAddress",
           "fullAddress",
           "city",
           "state",
@@ -8372,7 +8372,7 @@
           "documentId": {
             "type": "string"
           },
-          "addressTitle": {
+          "streetAddress": {
             "type": "string"
           },
           "fullAddress": {
@@ -8532,7 +8532,7 @@
                     "documentId": {
                       "type": "string"
                     },
-                    "addressTitle": {
+                    "streetAddress": {
                       "type": "string"
                     },
                     "fullAddress": {
@@ -14114,7 +14114,7 @@
                             "documentId": {
                               "type": "string"
                             },
-                            "addressTitle": {
+                            "streetAddress": {
                               "type": "string"
                             },
                             "fullAddress": {
@@ -18391,7 +18391,7 @@
                                 "documentId": {
                                   "type": "string"
                                 },
-                                "addressTitle": {
+                                "streetAddress": {
                                   "type": "string"
                                 },
                                 "fullAddress": {
@@ -21061,7 +21061,7 @@
               "documentId": {
                 "type": "string"
               },
-              "addressTitle": {
+              "streetAddress": {
                 "type": "string"
               },
               "fullAddress": {
@@ -25352,7 +25352,7 @@
                   "documentId": {
                     "type": "string"
                   },
-                  "addressTitle": {
+                  "streetAddress": {
                     "type": "string"
                   },
                   "fullAddress": {
@@ -29504,7 +29504,7 @@
                   "documentId": {
                     "type": "string"
                   },
-                  "addressTitle": {
+                  "streetAddress": {
                     "type": "string"
                   },
                   "fullAddress": {
@@ -37564,7 +37564,7 @@
                                             "documentId": {
                                               "type": "string"
                                             },
-                                            "addressTitle": {
+                                            "streetAddress": {
                                               "type": "string"
                                             },
                                             "fullAddress": {
@@ -41968,7 +41968,7 @@
                                         "documentId": {
                                           "type": "string"
                                         },
-                                        "addressTitle": {
+                                        "streetAddress": {
                                           "type": "string"
                                         },
                                         "fullAddress": {
@@ -46071,7 +46071,7 @@
                                       "documentId": {
                                         "type": "string"
                                       },
-                                      "addressTitle": {
+                                      "streetAddress": {
                                         "type": "string"
                                       },
                                       "fullAddress": {
@@ -50386,7 +50386,7 @@
                                       "documentId": {
                                         "type": "string"
                                       },
-                                      "addressTitle": {
+                                      "streetAddress": {
                                         "type": "string"
                                       },
                                       "fullAddress": {
@@ -54475,7 +54475,7 @@
                             "documentId": {
                               "type": "string"
                             },
-                            "addressTitle": {
+                            "streetAddress": {
                               "type": "string"
                             },
                             "fullAddress": {

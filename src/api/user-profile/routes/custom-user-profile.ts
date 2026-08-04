@@ -8,5 +8,14 @@ export default {
         auth: {}
       },
     },
+    {
+      method: "POST",
+      path: "/create-user-manually",
+      handler: "user-profile.customerCreatedByAdmin",
+      config: {
+        auth: {}
+      },
+    },
+    
   ],
 };

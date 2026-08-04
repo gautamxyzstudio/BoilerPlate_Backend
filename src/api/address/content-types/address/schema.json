@@ -11,7 +11,7 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "addressTitle": {
+    "streetAddress": {
       "type": "string",
       "required": true
     },

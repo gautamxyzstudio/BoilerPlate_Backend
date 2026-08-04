@@ -454,7 +454,6 @@ export interface ApiAddressAddress extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    addressTitle: Schema.Attribute.String & Schema.Attribute.Required;
     addressType: Schema.Attribute.Enumeration<['home', 'work', 'other']>;
     city: Schema.Attribute.String & Schema.Attribute.Required;
     country: Schema.Attribute.String & Schema.Attribute.Required;
@@ -478,6 +477,7 @@ export interface ApiAddressAddress extends Struct.CollectionTypeSchema {
     postalCode: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     state: Schema.Attribute.String & Schema.Attribute.Required;
+    streetAddress: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
