@@ -136,6 +136,8 @@ export default factories.createCoreController(
                                     name: variant.name,
                                     image: variant.image,
                                     service: service.documentId,
+                                    expressDeliveryAvailable:
+                                        variant.expressDeliveryAvailable ?? true,
                                 },
                                 transaction: trx,
                             });
@@ -570,6 +572,8 @@ export default factories.createCoreController(
                                         name: variant.name,
                                         image: variant.image,
                                         service: existingService.documentId,
+                                        expressDeliveryAvailable:
+                                            variant.expressDeliveryAvailable ?? true,
                                     },
                                     transaction: trx,
                                 });
@@ -620,7 +624,8 @@ export default factories.createCoreController(
                                     variant.image === undefined &&
                                     variant.price === undefined &&
                                     variant.offerPrice === undefined &&
-                                    variant.expressDeliveryPrice === undefined
+                                    variant.expressDeliveryPrice === undefined &&
+                                    variant.expressDeliveryAvailable === undefined
                                 ) {
                                     throw new Error(
                                         "No fields provided to update for the existing variant."
@@ -651,6 +656,10 @@ export default factories.createCoreController(
                                             }),
                                             ...(variant.image !== undefined && {
                                                 image: variant.image,
+                                            }),
+                                            ...(variant.expressDeliveryAvailable !== undefined && {
+                                                expressDeliveryAvailable:
+                                                    variant.expressDeliveryAvailable,
                                             }),
                                         },
                                         transaction: trx,
@@ -728,6 +737,8 @@ export default factories.createCoreController(
                                             image: variant.image,
                                             service:
                                                 existingService.documentId,
+                                            expressDeliveryAvailable:
+                                                variant.expressDeliveryAvailable ?? true,
                                         },
                                         transaction: trx,
                                     });

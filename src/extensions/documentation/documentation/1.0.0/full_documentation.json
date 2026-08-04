@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2026-08-04T09:40:31.560Z"
+    "x-generation-date": "2026-08-04T10:14:33.679Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -11567,6 +11567,9 @@
                                     "isActive": {
                                       "type": "boolean"
                                     },
+                                    "expressDeliveryAvailable": {
+                                      "type": "boolean"
+                                    },
                                     "displayOrder": {
                                       "type": "integer"
                                     },
@@ -15106,6 +15109,9 @@
                                               }
                                             },
                                             "isActive": {
+                                              "type": "boolean"
+                                            },
+                                            "expressDeliveryAvailable": {
                                               "type": "boolean"
                                             },
                                             "displayOrder": {
@@ -19383,6 +19389,9 @@
                                                   }
                                                 },
                                                 "isActive": {
+                                                  "type": "boolean"
+                                                },
+                                                "expressDeliveryAvailable": {
                                                   "type": "boolean"
                                                 },
                                                 "displayOrder": {
@@ -24086,6 +24095,9 @@
                                         "isActive": {
                                           "type": "boolean"
                                         },
+                                        "expressDeliveryAvailable": {
+                                          "type": "boolean"
+                                        },
                                         "displayOrder": {
                                           "type": "integer"
                                         },
@@ -28387,6 +28399,9 @@
                                   "isActive": {
                                     "type": "boolean"
                                   },
+                                  "expressDeliveryAvailable": {
+                                    "type": "boolean"
+                                  },
                                   "displayOrder": {
                                     "type": "integer"
                                   },
@@ -32537,6 +32552,9 @@
                                     }
                                   },
                                   "isActive": {
+                                    "type": "boolean"
+                                  },
+                                  "expressDeliveryAvailable": {
                                     "type": "boolean"
                                   },
                                   "displayOrder": {
@@ -37384,6 +37402,9 @@
                               "isActive": {
                                 "type": "boolean"
                               },
+                              "expressDeliveryAvailable": {
+                                "type": "boolean"
+                              },
                               "displayOrder": {
                                 "type": "integer"
                               },
@@ -41788,6 +41809,9 @@
                           "isActive": {
                             "type": "boolean"
                           },
+                          "expressDeliveryAvailable": {
+                            "type": "boolean"
+                          },
                           "displayOrder": {
                             "type": "integer"
                           },
@@ -45891,6 +45915,9 @@
                         "isActive": {
                           "type": "boolean"
                         },
+                        "expressDeliveryAvailable": {
+                          "type": "boolean"
+                        },
                         "displayOrder": {
                           "type": "integer"
                         },
@@ -48212,6 +48239,9 @@
               "isActive": {
                 "type": "boolean"
               },
+              "expressDeliveryAvailable": {
+                "type": "boolean"
+              },
               "displayOrder": {
                 "type": "integer"
               },
@@ -49453,6 +49483,9 @@
           "isActive": {
             "type": "boolean"
           },
+          "expressDeliveryAvailable": {
+            "type": "boolean"
+          },
           "displayOrder": {
             "type": "integer"
           },
@@ -50204,6 +50237,9 @@
                           }
                         },
                         "isActive": {
+                          "type": "boolean"
+                        },
+                        "expressDeliveryAvailable": {
                           "type": "boolean"
                         },
                         "displayOrder": {
@@ -55467,6 +55503,9 @@
                                               }
                                             },
                                             "isActive": {
+                                              "type": "boolean"
+                                            },
+                                            "expressDeliveryAvailable": {
                                               "type": "boolean"
                                             },
                                             "displayOrder": {

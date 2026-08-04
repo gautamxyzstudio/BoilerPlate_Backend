@@ -901,6 +901,8 @@ export interface ApiServiceVarientServiceVarient
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     displayOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    expressDeliveryAvailable: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<true>;
     image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
