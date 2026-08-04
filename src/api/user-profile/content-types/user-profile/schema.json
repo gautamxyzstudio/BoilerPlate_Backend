@@ -80,6 +80,12 @@
       "relation": "oneToMany",
       "target": "api::address.address",
       "mappedBy": "user_profile"
+    },
+    "cart": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::cart.cart",
+      "mappedBy": "user_profile"
     }
   }
 }

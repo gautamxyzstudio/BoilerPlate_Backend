@@ -460,6 +460,7 @@ export interface ApiAddressAddress extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    delivery_cart: Schema.Attribute.Relation<'oneToMany', 'api::cart.cart'>;
     delivery_orders: Schema.Attribute.Relation<'oneToMany', 'api::order.order'>;
     fullAddress: Schema.Attribute.Text & Schema.Attribute.Required;
     isDefaultAddress: Schema.Attribute.Boolean &
@@ -473,6 +474,7 @@ export interface ApiAddressAddress extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     longitude: Schema.Attribute.String;
+    pickup_cart: Schema.Attribute.Relation<'oneToMany', 'api::cart.cart'>;
     pickup_orders: Schema.Attribute.Relation<'oneToMany', 'api::order.order'>;
     postalCode: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
@@ -483,6 +485,111 @@ export interface ApiAddressAddress extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     user_profile: Schema.Attribute.Relation<
       'manyToOne',
+      'api::user-profile.user-profile'
+    >;
+  };
+}
+
+export interface ApiCartItemCartItem extends Struct.CollectionTypeSchema {
+  collectionName: 'cart_items';
+  info: {
+    displayName: 'Cart Items';
+    pluralName: 'cart-items';
+    singularName: 'cart-item';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    cart: Schema.Attribute.Relation<'manyToOne', 'api::cart.cart'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    expressDelivery: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    expressDeliveryPrice: Schema.Attribute.Decimal;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::cart-item.cart-item'
+    > &
+      Schema.Attribute.Private;
+    offerPrice: Schema.Attribute.Decimal;
+    publishedAt: Schema.Attribute.DateTime;
+    quantity: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<1>;
+    remarks: Schema.Attribute.Text;
+    service: Schema.Attribute.Relation<'manyToOne', 'api::service.service'>;
+    service_pricing: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::service-pricing.service-pricing'
+    >;
+    service_varient: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::service-varient.service-varient'
+    >;
+    totalPrice: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    unitPrice: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiCartCart extends Struct.CollectionTypeSchema {
+  collectionName: 'carts';
+  info: {
+    displayName: 'cart';
+    pluralName: 'carts';
+    singularName: 'cart';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    appointmentDate: Schema.Attribute.Date;
+    appointmentTime: Schema.Attribute.Time;
+    cart_items: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::cart-item.cart-item'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    delivery_address: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::address.address'
+    >;
+    deliveryCharge: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
+    deliveryDate: Schema.Attribute.Date;
+    deliveryTime: Schema.Attribute.Time;
+    discount: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
+    grandTotal: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::cart.cart'> &
+      Schema.Attribute.Private;
+    pickup_address: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::address.address'
+    >;
+    pickupDate: Schema.Attribute.Date;
+    pickupTime: Schema.Attribute.Time;
+    publishedAt: Schema.Attribute.DateTime;
+    specialInstructions: Schema.Attribute.Text;
+    subTotal: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
+    tax: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user_profile: Schema.Attribute.Relation<
+      'oneToOne',
       'api::user-profile.user-profile'
     >;
   };
@@ -856,6 +963,10 @@ export interface ApiServicePricingServicePricing
     draftAndPublish: false;
   };
   attributes: {
+    cart_items: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::cart-item.cart-item'
+    >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -897,6 +1008,10 @@ export interface ApiServiceVarientServiceVarient
     draftAndPublish: false;
   };
   attributes: {
+    cart_items: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::cart-item.cart-item'
+    >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -939,6 +1054,10 @@ export interface ApiServiceService extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    cart_items: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::cart-item.cart-item'
+    >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -997,6 +1116,7 @@ export interface ApiUserProfileUserProfile extends Struct.CollectionTypeSchema {
     accountStatus: Schema.Attribute.Enumeration<
       ['approved', 'rejected', 'blocked']
     >;
+    cart: Schema.Attribute.Relation<'oneToOne', 'api::cart.cart'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1552,6 +1672,8 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::address.address': ApiAddressAddress;
+      'api::cart-item.cart-item': ApiCartItemCartItem;
+      'api::cart.cart': ApiCartCart;
       'api::driver-detail.driver-detail': ApiDriverDetailDriverDetail;
       'api::driver-document.driver-document': ApiDriverDocumentDriverDocument;
       'api::order-item.order-item': ApiOrderItemOrderItem;

@@ -1,0 +1,66 @@
+{
+  "kind": "collectionType",
+  "collectionName": "cart_items",
+  "info": {
+    "singularName": "cart-item",
+    "pluralName": "cart-items",
+    "displayName": "Cart Items"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "cart": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::cart.cart",
+      "inversedBy": "cart_items"
+    },
+    "service": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::service.service",
+      "inversedBy": "cart_items"
+    },
+    "service_varient": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::service-varient.service-varient",
+      "inversedBy": "cart_items"
+    },
+    "service_pricing": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::service-pricing.service-pricing",
+      "inversedBy": "cart_items"
+    },
+    "offerPrice": {
+      "type": "decimal"
+    },
+    "quantity": {
+      "type": "integer",
+      "required": true,
+      "default": 1,
+      "min": 1
+    },
+    "unitPrice": {
+      "type": "decimal",
+      "required": true
+    },
+    "totalPrice": {
+      "type": "decimal",
+      "required": true
+    },
+    "expressDelivery": {
+      "type": "boolean",
+      "default": false
+    },
+    "expressDeliveryPrice": {
+      "type": "decimal"
+    },
+    "remarks": {
+      "type": "text"
+    }
+  }
+}

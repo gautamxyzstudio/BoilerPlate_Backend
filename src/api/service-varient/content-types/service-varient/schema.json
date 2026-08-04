@@ -29,7 +29,7 @@
       "type": "boolean",
       "default": true
     },
-     "expressDeliveryAvailable": {
+    "expressDeliveryAvailable": {
       "type": "boolean",
       "default": true
     },
@@ -53,6 +53,12 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::order-item.order-item",
+      "mappedBy": "service_varient"
+    },
+    "cart_items": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::cart-item.cart-item",
       "mappedBy": "service_varient"
     }
   }

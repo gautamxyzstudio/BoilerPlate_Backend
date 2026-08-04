@@ -73,6 +73,18 @@
       "relation": "manyToOne",
       "target": "api::user-profile.user-profile",
       "inversedBy": "customer_addresses"
+    },
+    "pickup_cart": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::cart.cart",
+      "mappedBy": "pickup_address"
+    },
+    "delivery_cart": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::cart.cart",
+      "mappedBy": "delivery_address"
     }
   }
 }

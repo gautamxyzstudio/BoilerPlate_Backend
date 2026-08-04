@@ -1,0 +1,80 @@
+{
+  "kind": "collectionType",
+  "collectionName": "carts",
+  "info": {
+    "singularName": "cart",
+    "pluralName": "carts",
+    "displayName": "cart"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "cart_items": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::cart-item.cart-item",
+      "mappedBy": "cart"
+    },
+    "specialInstructions": {
+      "type": "text"
+    },
+    "user_profile": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::user-profile.user-profile",
+      "inversedBy": "cart"
+    },
+    "deliveryCharge": {
+      "type": "decimal",
+      "default": 0
+    },
+    "pickup_address": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::address.address",
+      "inversedBy": "pickup_cart"
+    },
+    "delivery_address": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::address.address",
+      "inversedBy": "delivery_cart"
+    },
+    "subTotal": {
+      "type": "decimal",
+       "default": 0
+    },
+    "tax": {
+      "type": "decimal",
+       "default": 0
+    },
+    "discount": {
+      "type": "decimal",
+       "default": 0
+    },
+    "grandTotal": {
+      "type": "decimal",
+       "default": 0
+    },
+    "pickupDate": {
+      "type": "date"
+    },
+    "pickupTime": {
+      "type": "time"
+    },
+    "deliveryDate": {
+      "type": "date"
+    },
+    "deliveryTime": {
+      "type": "time"
+    },
+    "appointmentDate": {
+      "type": "date"
+    },
+    "appointmentTime": {
+      "type": "time"
+    }
+  }
+}
