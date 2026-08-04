@@ -931,8 +931,55 @@ export default factories.createCoreController(
                                 },
                     });
 
+                if (!response) {
+                    return ctx.notFound("Service not found.");
+                }
+
+                const formattedResponse = {
+                    documentId: response.documentId,
+                    name: response.name,
+                    imageUrl: response.image?.url || null,
+                    scheduleType: response.scheduleType,
+                    isActive: response.isActive,
+
+                    service_category: response.service_category
+                        ? {
+                            documentId: response.service_category.documentId,
+                            name: response.service_category.name,
+                            description: response.service_category.description,
+                            isActive: response.service_category.isActive,
+                        }
+                        : null,
+
+                    ...(response.pricingModel === "flat"
+                        ? {
+                            service_pricings: (response.service_pricings || []).map((pricing) => ({
+                                documentId: pricing.documentId,
+                                price: pricing.price,
+                                offerPrice: pricing.offerPrice,
+                                isActive: pricing.isActive,
+                                expressDeliveryPrice: pricing.expressDeliveryPrice,
+                            })),
+                        }
+                        : {
+                            service_varients: (response.service_varients || []).map((variant) => ({
+                                documentId: variant.documentId,
+                                name: variant.name,
+                                isActive: variant.isActive,
+                                imageUrl: variant.image?.url || null,
+                                service_pricings: (variant.service_pricings || []).map((pricing) => ({
+                                    documentId: pricing.documentId,
+                                    price: pricing.price,
+                                    offerPrice: pricing.offerPrice,
+                                    isActive: pricing.isActive,
+                                    expressDeliveryPrice: pricing.expressDeliveryPrice,
+                                })),
+                            })),
+                        }),
+                };
+
                 ctx.body = {
-                    data: response,
+                    data: formattedResponse,
                 };
             } catch (error: any) {
                 strapi.log.error("Error fetching service:", error);
