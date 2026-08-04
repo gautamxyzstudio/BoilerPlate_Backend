@@ -547,6 +547,248 @@ export default factories.createCoreController(
 
         },
 
+        async update(ctx: Context) {
+            try {
+                const loggedInUser = ctx.state.user;
+
+                if (!loggedInUser) {
+                    return ctx.unauthorized("You must be logged in.");
+                }
+
+                const body = ctx.request.body?.data || ctx.request.body;
+
+                const documentId = ctx.params.id;
+
+                const {
+                    fullName,
+                    email,
+                    phoneNumber,
+                    accountStatus,
+                    emailVerified,
+                    phoneVerified,
+                    address,
+                } = body;
+
+                if (!documentId) {
+                    return ctx.badRequest("User profile documentId is required.");
+                }
+
+              const normalizedEmail = email ? normalizeIdentifier(email) : null;
+
+if (email && (!normalizedEmail || normalizedEmail.identifierType !== "email")) {
+    return ctx.badRequest("Invalid email.");
+}
+
+const normalizedPhone = phoneNumber ? normalizeIdentifier(phoneNumber) : null;
+
+if (
+    phoneNumber &&
+    (!normalizedPhone || normalizedPhone.identifierType !== "phone")
+) {
+    return ctx.badRequest("Invalid phone number.");
+}
+
+const emailValue = normalizedEmail?.identifier;
+const phoneValue = normalizedPhone?.identifier;
+
+                const loggedInUserWithRole = await strapi.db
+                    .query("plugin::users-permissions.user")
+                    .findOne({
+                        where: {
+                            id: loggedInUser.id,
+                        },
+                        populate: {
+                            role: true,
+                        },
+                    });
+
+                if (!loggedInUserWithRole) {
+                    return ctx.unauthorized("User not found.");
+                }
+
+                const roleName = loggedInUserWithRole.role?.name;
+
+                if (roleName !== "Admin" && roleName !== "SuperAdmin") {
+                    return ctx.forbidden(
+                        "Only Admin and SuperAdmin can update customers."
+                    );
+                }
+
+                const customer = await strapi
+                    .documents("api::user-profile.user-profile")
+                    .findOne({
+                        documentId,
+                        populate: {
+                            users_permissions_user: true,
+                            customer_addresses: true,
+                        },
+                    });
+
+                if (!customer) {
+                    return ctx.notFound("Customer not found.");
+                }
+
+                // Validate address payload
+                if (address && !address.documentId) {
+                    return ctx.badRequest("Address documentId is required.");
+                }
+
+                // Check duplicate email 
+                if (email) {
+                    const existingEmail = await strapi
+                        .documents("api::user-profile.user-profile")
+                        .findFirst({
+                            filters: {
+                                email: {
+                                    $eqi: emailValue,
+                                },
+                                documentId: {
+                                    $ne: documentId,
+                                },
+                            },
+                        });
+
+                    if (existingEmail) {
+                        return ctx.badRequest("Email already exists.");
+                    }
+                }
+
+                // Check duplicate phone 
+                if (phoneNumber) {
+                    const existingPhone = await strapi
+                        .documents("api::user-profile.user-profile")
+                        .findFirst({
+                            filters: {
+                                phoneNumber: {
+                                    $eq: phoneValue,
+                                },
+                                documentId: {
+                                    $ne: documentId,
+                                },
+                            },
+                        });
+
+                    if (existingPhone) {
+                        return ctx.badRequest("Phone number already exists.");
+                    }
+                }
+
+                // Update user profile
+                const profileData: Record<string, any> = {};
+
+                if (fullName !== undefined) profileData.fullName = fullName;
+                if (emailValue !== undefined) profileData.email = emailValue;
+                if (phoneValue !== undefined) profileData.phoneNumber = phoneValue;
+                if (accountStatus !== undefined) profileData.accountStatus = accountStatus;
+                if (emailVerified !== undefined) profileData.emailVerified = emailVerified;
+                if (phoneVerified !== undefined) profileData.phoneVerified = phoneVerified;
+
+                if (Object.keys(profileData).length > 0) {
+                    await strapi.documents("api::user-profile.user-profile").update({
+                        documentId,
+                        data: profileData,
+                    });
+                }
+
+                if (
+                    customer.users_permissions_user &&
+                    (email !== undefined || phoneNumber !== undefined)
+                ) {
+                    const userData: Record<string, any> = {};
+
+                    if (emailValue !== undefined) {
+                        userData.email = emailValue;
+                        userData.username = emailValue;
+                    }
+
+                    if (phoneValue !== undefined) {
+                        userData.phoneNumber = phoneValue;
+                    }
+                    await strapi.db
+                        .query("plugin::users-permissions.user")
+                        .update({
+                            where: {
+                                id: customer.users_permissions_user.id,
+                            },
+                            data: userData,
+                        });
+                }
+                // Verify address belongs to this customer
+                if (address) {
+                    const customerAddresses = (customer.customer_addresses ?? []) as any[];
+
+                    const customerAddress = customerAddresses.find(
+                        (item) => item.documentId === address.documentId
+                    );
+
+                    if (!customerAddress) {
+                        return ctx.notFound(
+                            "Address not found or does not belong to this customer."
+                        );
+                    }
+
+                    const addressData: Record<string, any> = {};
+
+                    if (address.streetAddress !== undefined)
+                        addressData.streetAddress = address.streetAddress;
+
+                    if (address.fullAddress !== undefined)
+                        addressData.fullAddress = address.fullAddress;
+
+                    if (address.landmark !== undefined)
+                        addressData.landmark = address.landmark;
+
+                    if (address.city !== undefined)
+                        addressData.city = address.city;
+
+                    if (address.state !== undefined)
+                        addressData.state = address.state;
+
+                    if (address.postalCode !== undefined)
+                        addressData.postalCode = address.postalCode;
+
+                    if (address.country !== undefined)
+                        addressData.country = address.country;
+
+                    if (address.latitude !== undefined)
+                        addressData.latitude = address.latitude;
+
+                    if (address.longitude !== undefined)
+                        addressData.longitude = address.longitude;
+
+                    if (address.addressType !== undefined)
+                        addressData.addressType = address.addressType;
+
+                    await strapi.documents("api::address.address").update({
+                        documentId: address.documentId,
+                        data: addressData,
+                    });
+                }
+
+                // Fetch updated customer
+                const updatedCustomer = await strapi
+                    .documents("api::user-profile.user-profile")
+                    .findOne({
+                        documentId,
+                        populate: {
+                            users_permissions_user: true,
+                            customer_addresses: true,
+                        },
+                    });
+
+                return ctx.send({
+                    message: "Customer updated successfully.",
+                    data: updatedCustomer,
+                });
+
+            } catch (error: any) {
+                strapi.log.error("Update Customer Error:", error);
+
+                return ctx.internalServerError(
+                    error?.message || "Something went wrong while updating customer."
+                );
+            }
+        },
 
     })
 );
