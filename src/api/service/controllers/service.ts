@@ -952,6 +952,7 @@ export default factories.createCoreController(
                     imageUrl: response.image?.url || null,
                     scheduleType: response.scheduleType,
                     isActive: response.isActive,
+                    
 
                     service_category: response.service_category
                         ? {
@@ -978,6 +979,7 @@ export default factories.createCoreController(
                                 name: variant.name,
                                 isActive: variant.isActive,
                                 imageUrl: variant.image?.url || null,
+                                expressDeliveryAvailable: variant.expressDeliveryAvailable,
                                 service_pricings: (variant.service_pricings || []).map((pricing) => ({
                                     documentId: pricing.documentId,
                                     price: pricing.price,
