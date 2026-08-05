@@ -9,7 +9,8 @@ export default factories.createCoreController(
     ({ strapi }) => ({
 
         async create(ctx) {
-            const trx = await strapi.db.transaction();
+
+            let trx;
 
             try {
                 // ===============================================
@@ -94,6 +95,8 @@ export default factories.createCoreController(
                 // ===============================================
                 // Validate Services & Calculate Prices
                 // ===============================================
+
+                trx = await strapi.db.transaction();
 
                 let subTotal = 0;
 
@@ -456,6 +459,7 @@ export default factories.createCoreController(
                 // ===============================================
 
                 await trx.commit();
+                trx = null;
 
                 // ===============================================
                 // Return Populated Cart
@@ -553,7 +557,9 @@ export default factories.createCoreController(
 
             } catch (error: any) {
 
-                await trx.rollback();
+                if (trx) {
+                    await trx.rollback();
+                }
 
                 strapi.log.error("Create Cart Error:", error);
 
@@ -710,7 +716,7 @@ export default factories.createCoreController(
         },
 
         async update(ctx) {
-            const trx = await strapi.db.transaction();
+            let trx;
 
             try {
                 // ===============================================
@@ -778,7 +784,7 @@ export default factories.createCoreController(
                     });
 
                 if (!cart) {
-                    await trx.rollback();
+
                     return ctx.notFound("Cart not found.");
                 }
 
@@ -790,7 +796,7 @@ export default factories.createCoreController(
                     !cart.user_profile ||
                     cart.user_profile.documentId !== userProfile.documentId
                 ) {
-                    await trx.rollback();
+
                     return ctx.forbidden(
                         "You are not allowed to update this cart."
                     );
@@ -813,7 +819,7 @@ export default factories.createCoreController(
                         });
 
                     if (!pickupAddress) {
-                        await trx.rollback();
+
                         return ctx.badRequest("Pickup address not found.");
                     }
 
@@ -821,7 +827,7 @@ export default factories.createCoreController(
                         pickupAddress.user_profile?.documentId !==
                         userProfile.documentId
                     ) {
-                        await trx.rollback();
+
                         return ctx.forbidden(
                             "Pickup address does not belong to you."
                         );
@@ -845,7 +851,7 @@ export default factories.createCoreController(
                         });
 
                     if (!deliveryAddress) {
-                        await trx.rollback();
+
                         return ctx.badRequest("Delivery address not found.");
                     }
 
@@ -853,7 +859,7 @@ export default factories.createCoreController(
                         deliveryAddress.user_profile?.documentId !==
                         userProfile.documentId
                     ) {
-                        await trx.rollback();
+
                         return ctx.forbidden(
                             "Delivery address does not belong to you."
                         );
@@ -866,14 +872,14 @@ export default factories.createCoreController(
                 const cartItems: any[] = cart.cart_items || [];
 
                 if (cartItems.length === 0) {
-                    await trx.rollback();
+
                     return ctx.badRequest("Cart is empty.");
                 }
 
                 const scheduleType = cartItems[0]?.service?.scheduleType;
 
                 if (!scheduleType) {
-                    await trx.rollback();
+
                     return ctx.badRequest(
                         "Unable to determine service schedule type."
                     );
@@ -886,32 +892,32 @@ export default factories.createCoreController(
                 if (scheduleType === "pickup_delivery") {
 
                     if (!pickup_address) {
-                        await trx.rollback();
+
                         return ctx.badRequest("Pickup address is required.");
                     }
 
                     if (!delivery_address) {
-                        await trx.rollback();
+
                         return ctx.badRequest("Delivery address is required.");
                     }
 
                     if (!pickupDate) {
-                        await trx.rollback();
+
                         return ctx.badRequest("Pickup date is required.");
                     }
 
                     if (!pickupTime) {
-                        await trx.rollback();
+
                         return ctx.badRequest("Pickup time is required.");
                     }
 
                     if (!deliveryDate) {
-                        await trx.rollback();
+
                         return ctx.badRequest("Delivery date is required.");
                     }
 
                     if (!deliveryTime) {
-                        await trx.rollback();
+
                         return ctx.badRequest("Delivery time is required.");
                     }
                 }
@@ -919,17 +925,17 @@ export default factories.createCoreController(
                 if (scheduleType === "appointment") {
 
                     if (!pickup_address) {
-                        await trx.rollback();
+
                         return ctx.badRequest("Pickup address is required.");
                     }
 
                     if (!appointmentDate) {
-                        await trx.rollback();
+
                         return ctx.badRequest("Appointment date is required.");
                     }
 
                     if (!appointmentTime) {
-                        await trx.rollback();
+
                         return ctx.badRequest("Appointment time is required.");
                     }
                 }
@@ -937,6 +943,8 @@ export default factories.createCoreController(
                 // ===============================================
                 // Update Cart
                 // ===============================================
+
+                trx = await strapi.db.transaction();
 
                 await strapi.documents("api::cart.cart").update({
                     documentId: cart.documentId,
@@ -960,6 +968,7 @@ export default factories.createCoreController(
                 });
 
                 await trx.commit();
+                trx = null;
 
                 // ===============================================
                 // Fetch Updated Cart
@@ -987,7 +996,7 @@ export default factories.createCoreController(
                     });
 
                 if (!populatedCart) {
-                    await trx.rollback();
+
                     return ctx.notFound("Cart not found.");
                 }
 
@@ -1087,7 +1096,9 @@ export default factories.createCoreController(
                 });
 
             } catch (error: any) {
-                await trx.rollback();
+                if (trx) {
+                    await trx.rollback();
+                }
 
                 strapi.log.error("Update Cart Error:", error);
 
@@ -1098,7 +1109,7 @@ export default factories.createCoreController(
         },
 
         async updateCartItems(ctx) {
-            const trx = await strapi.db.transaction();
+            let trx;
 
             try {
                 // ===============================================
@@ -1124,7 +1135,7 @@ export default factories.createCoreController(
                     });
 
                 if (!userProfile) {
-                    await trx.rollback();
+
                     return ctx.badRequest("User profile not found.");
                 }
 
@@ -1139,7 +1150,7 @@ export default factories.createCoreController(
                 const { action } = body;
 
                 if (!["increase", "decrease", "remove"].includes(action)) {
-                    await trx.rollback();
+
                     return ctx.badRequest(
                         "Action must be increase, decrease or remove."
                     );
@@ -1160,7 +1171,7 @@ export default factories.createCoreController(
                     });
 
                 if (!cartItem) {
-                    await trx.rollback();
+
 
                     if (action === "increase") {
                         return ctx.badRequest(
@@ -1191,11 +1202,13 @@ export default factories.createCoreController(
                     !cart.user_profile ||
                     cart.user_profile.documentId !== userProfile.documentId
                 ) {
-                    await trx.rollback();
+
                     return ctx.forbidden(
                         "You are not allowed to modify this cart."
                     );
                 }
+
+                trx = await strapi.db.transaction();
 
                 // ===============================================
                 // Update Cart Item
@@ -1343,8 +1356,6 @@ export default factories.createCoreController(
                     transaction: trx,
                 });
 
-                await trx.commit();
-
                 // ===============================================
                 // Fetch Updated Cart
                 // ===============================================
@@ -1463,6 +1474,9 @@ export default factories.createCoreController(
                     })),
                 };
 
+                await trx.commit();
+                trx = null;
+
                 const message =
                     action === "increase"
                         ? "Cart item quantity increased successfully."
@@ -1475,7 +1489,9 @@ export default factories.createCoreController(
                     data: response,
                 });
             } catch (error: any) {
-                await trx.rollback();
+                if (trx) {
+                    await trx.rollback();
+                }
 
                 strapi.log.error("Remove Cart Item Error:", error);
 

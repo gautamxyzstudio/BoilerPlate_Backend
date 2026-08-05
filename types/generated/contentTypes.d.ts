@@ -824,13 +824,13 @@ export interface ApiPaymentCollectionPaymentCollection
     > &
       Schema.Attribute.Private;
     order: Schema.Attribute.Relation<'manyToOne', 'api::order.order'>;
-    paymentDate: Schema.Attribute.DateTime;
-    paymentUrl: Schema.Attribute.Text;
-    publishedAt: Schema.Attribute.DateTime;
-    status: Schema.Attribute.Enumeration<
+    payment_status: Schema.Attribute.Enumeration<
       ['pending', 'paid', 'failed', 'expired', 'cancelled', 'refunded']
     > &
       Schema.Attribute.DefaultTo<'pending'>;
+    paymentDate: Schema.Attribute.DateTime;
+    paymentUrl: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
     transactionId: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

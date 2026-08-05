@@ -32,7 +32,7 @@
     "amount": {
       "type": "decimal"
     },
-    "status": {
+    "payment_status": {
       "type": "enumeration",
       "default": "pending",
       "enum": [

@@ -74,7 +74,7 @@ export const sendOrderConfirmationEmail = async (
                         <thead style="background:#f5f5f5;">
                             <tr>
                                 <th style="padding:10px;text-align:left;">Service</th>
-                                <th style="padding:10px;text-align:left;">Variant</th>
+                                <th style="padding:10px;text-align:left;">Item</th>
                                 <th style="padding:10px;">Qty</th>
                                 <th style="padding:10px;text-align:right;">Total</th>
                             </tr>

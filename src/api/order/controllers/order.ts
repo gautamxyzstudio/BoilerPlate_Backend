@@ -198,7 +198,7 @@ export default factories.createCoreController(
 
         //                     specialInstruction: (cart as any).specialInstructions,
 
-        //                     pickup_address: (cart as any).pickup_address.documentId,
+        //                     pickup_address: (cart as any).pickup_address?.documentId ?? null,
 
         //                     user_profile: userProfile.documentId,
         //                 },
@@ -246,61 +246,72 @@ export default factories.createCoreController(
         //         // Commit Transaction
         //         // ===============================================
 
+        //         paymentCollection = await strapi
+        //             .documents("api::payment-collection.payment-collection")
+        //             .create({
+        //                 data: {
+        //                     order: createdOrder.documentId,
+        //                     amount: Number((cart as any).grandTotal),
+        //                     payment_status: paymentMethod === "cod" ? "pending" : "pending",
+        //                 },
+        //                 transaction: trx,
+        //             });
+
+        //             console.log(paymentCollection);
+
         //         await trx.commit();
 
         //         if (paymentMethod === "online") {
-        //             paymentCollection = await strapi
-        //                 .documents("api::payment-collection.payment-collection")
-        //                 .create({
-        //                     data: {
-        //                         order: createdOrder.documentId,
-        //                         amount: Number((cart as any).grandTotal),
-        //                         status: "pending",
+        //             try {
+
+        //                 const response = await axios.post(
+        //                     "https://upigateway.dev/api/create-order",
+        //                     {
+        //                         customer_mobile: userProfile.phoneNumber,
+        //                         user_token: process.env.UPI_GATEWAY_TOKEN,
+        //                         amount: Number((cart as any).grandTotal).toString(),
+        //                         order_id: orderNo,
+        //                         redirect_url: `${process.env.FRONTEND_URL}/payment-success`,
+        //                         remark1: orderNo,
+        //                         remark2: createdOrder.documentId,
         //                     },
-        //                     transaction: trx,
+        //                     {
+        //                         headers: {
+        //                             "Content-Type": "application/json",
+        //                         },
+        //                     }
+        //                 );
+
+        //                 const result = response.data;
+
+        //                 if (!result.status) {
+        //                     throw new Error(result.message || "Unable to create payment.");
+        //                 }
+
+        //                 paymentUrl = result.result.payment_url;
+
+        //                 await strapi
+        //                     .documents("api::payment-collection.payment-collection")
+        //                     .update({
+        //                         documentId: paymentCollection.documentId,
+        //                         data: {
+        //                             gatewayOrderId: result.result.orderId,
+        //                             paymentUrl: result.result.payment_url,
+        //                             gatewayResponse: result,
+        //                         },
+        //                     });
+
+        //             } catch (error) {
+
+        //                 strapi.log.error("Payment Gateway Error:", error);
+
+        //                 return ctx.send({
+        //                     message: "Order created successfully, but payment initialization failed.",
+        //                     data: createdOrder,
+        //                     paymentUrl: null,
         //                 });
 
-        //             console.log("Payment Collection:", paymentCollection);
-        //         }
-
-        //         if (paymentMethod === "online") {
-
-        //             const response = await axios.post(
-        //                 "https://upigateway.dev/api/create-order",
-        //                 {
-        //                     customer_mobile: user.phone,
-        //                     user_token: process.env.UPI_GATEWAY_TOKEN,
-        //                     amount: Number((cart as any).grandTotal).toString(),
-        //                     order_id: orderNo,
-        //                     redirect_url: `${process.env.FRONTEND_URL}/payment-success`,
-        //                     remark1: orderNo,
-        //                     remark2: createdOrder.documentId,
-        //                 },
-        //                 {
-        //                     headers: {
-        //                         "Content-Type": "application/json",
-        //                     },
-        //                 }
-        //             );
-
-        //             const result = response.data;
-        //             console.log(result);
-
-        //             if (!result.status) {
-        //                 throw new Error(result.message || "Unable to create payment.");
         //             }
-
-        //             paymentUrl = result.result.payment_url;
-
-        //             await strapi.documents("api::payment-collection.payment-collection").update({
-        //                 documentId: paymentCollection.documentId,
-        //                 data: {
-        //                     gatewayOrderId: result.result.orderId,
-        //                     paymentUrl: result.result.payment_url,
-        //                     gatewayResponse: result,
-        //                 },
-        //             });
-
         //         }
 
         //         // ===============================================
@@ -329,15 +340,36 @@ export default factories.createCoreController(
         //                 },
         //             });
 
+        //         const emailItems = (cart as any).cart_items.map((item: any) => ({
+        //             serviceName: item.service?.name,
+        //             variantName: item.service_varient?.name,
+        //             quantity: item.quantity,
+        //             totalPrice: item.totalPrice,
+        //         }));
+
         //         if (paymentMethod === "cod") {
         //             await sendOrderConfirmationEmail(
         //                 userProfile.email,
         //                 userProfile.fullName,
         //                 orderNo,
-        //                 grandTotal,
+        //                 Number((cart as any).grandTotal),
         //                 paymentMethod,
-        //                 preparedOrderItems
+        //                 emailItems
         //             );
+
+        //             // ===============================================
+        //             // Clear Cart
+        //             // ===============================================
+
+        //             for (const item of (cart as any).cart_items) {
+        //                 await strapi.documents("api::cart-item.cart-item").delete({
+        //                     documentId: item.documentId,
+        //                 });
+        //             }
+
+        //             await strapi.documents("api::cart.cart").delete({
+        //                 documentId: (cart as any).documentId,
+        //             });
         //         }
         //         return ctx.send({
         //             message: "Order created successfully.",
@@ -346,7 +378,11 @@ export default factories.createCoreController(
         //         });
 
         //     } catch (error: any) {
-        //         await trx.rollback();
+        //         try {
+        //             await trx.rollback();
+        //         } catch (_) {
+
+        //         }
 
         //         strapi.log.error("Create Order Error:", error);
 

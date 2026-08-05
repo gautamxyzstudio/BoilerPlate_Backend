@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2026-08-05T08:06:56.489Z"
+    "x-generation-date": "2026-08-05T12:06:34.306Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -13663,7 +13663,7 @@
                         "type": "number",
                         "format": "float"
                       },
-                      "status": {
+                      "payment_status": {
                         "type": "string",
                         "enum": [
                           "pending",
@@ -17942,7 +17942,7 @@
                                       "type": "number",
                                       "format": "float"
                                     },
-                                    "status": {
+                                    "payment_status": {
                                       "type": "string",
                                       "enum": [
                                         "pending",
@@ -22248,7 +22248,7 @@
                                                     "type": "number",
                                                     "format": "float"
                                                   },
-                                                  "status": {
+                                                  "payment_status": {
                                                     "type": "string",
                                                     "enum": [
                                                       "pending",
@@ -27126,7 +27126,7 @@
                                 "type": "number",
                                 "format": "float"
                               },
-                              "status": {
+                              "payment_status": {
                                 "type": "string",
                                 "enum": [
                                   "pending",
@@ -31895,7 +31895,7 @@
                                     "type": "number",
                                     "format": "float"
                                   },
-                                  "status": {
+                                  "payment_status": {
                                     "type": "string",
                                     "enum": [
                                       "pending",
@@ -37064,7 +37064,7 @@
                             "type": "number",
                             "format": "float"
                           },
-                          "status": {
+                          "payment_status": {
                             "type": "string",
                             "enum": [
                               "pending",
@@ -41899,7 +41899,7 @@
                       "type": "number",
                       "format": "float"
                     },
-                    "status": {
+                    "payment_status": {
                       "type": "string",
                       "enum": [
                         "pending",
@@ -42264,7 +42264,7 @@
                 "type": "number",
                 "format": "float"
               },
-              "status": {
+              "payment_status": {
                 "type": "string",
                 "enum": [
                   "pending",
@@ -46543,7 +46543,7 @@
                       "type": "number",
                       "format": "float"
                     },
-                    "status": {
+                    "payment_status": {
                       "type": "string",
                       "enum": [
                         "pending",
@@ -46724,7 +46724,7 @@
             "type": "number",
             "format": "float"
           },
-          "status": {
+          "payment_status": {
             "type": "string",
             "enum": [
               "pending",
@@ -52843,7 +52843,7 @@
                                                 "type": "number",
                                                 "format": "float"
                                               },
-                                              "status": {
+                                              "payment_status": {
                                                 "type": "string",
                                                 "enum": [
                                                   "pending",
@@ -57760,7 +57760,7 @@
                                             "type": "number",
                                             "format": "float"
                                           },
-                                          "status": {
+                                          "payment_status": {
                                             "type": "string",
                                             "enum": [
                                               "pending",
@@ -62369,7 +62369,7 @@
                                           "type": "number",
                                           "format": "float"
                                         },
-                                        "status": {
+                                        "payment_status": {
                                           "type": "string",
                                           "enum": [
                                             "pending",
@@ -67217,7 +67217,7 @@
                                           "type": "number",
                                           "format": "float"
                                         },
-                                        "status": {
+                                        "payment_status": {
                                           "type": "string",
                                           "enum": [
                                             "pending",
@@ -72037,7 +72037,7 @@
                                 "type": "number",
                                 "format": "float"
                               },
-                              "status": {
+                              "payment_status": {
                                 "type": "string",
                                 "enum": [
                                   "pending",
