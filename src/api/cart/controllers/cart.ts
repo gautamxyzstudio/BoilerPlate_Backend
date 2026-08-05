@@ -1097,7 +1097,7 @@ export default factories.createCoreController(
             }
         },
 
-        async removeItem(ctx) {
+        async updateCartItems(ctx) {
             const trx = await strapi.db.transaction();
 
             try {
@@ -1138,10 +1138,10 @@ export default factories.createCoreController(
 
                 const { action } = body;
 
-                if (!["decrease", "remove"].includes(action)) {
+                if (!["increase", "decrease", "remove"].includes(action)) {
                     await trx.rollback();
                     return ctx.badRequest(
-                        "Action must be either 'decrease' or 'remove'."
+                        "Action must be increase, decrease or remove."
                     );
                 }
 
@@ -1161,7 +1161,22 @@ export default factories.createCoreController(
 
                 if (!cartItem) {
                     await trx.rollback();
-                    return ctx.notFound("Cart item not found.");
+
+                    if (action === "increase") {
+                        return ctx.badRequest(
+                            "Cannot increase quantity. Cart item does not exist."
+                        );
+                    }
+
+                    if (action === "decrease") {
+                        return ctx.badRequest(
+                            "Cannot decrease quantity. Cart item does not exist."
+                        );
+                    }
+
+                    return ctx.badRequest(
+                        "Cannot remove item. Cart item does not exist."
+                    );
                 }
 
 
@@ -1186,9 +1201,9 @@ export default factories.createCoreController(
                 // Update Cart Item
                 // ===============================================
 
-                if (action === "decrease") {
-                    if (cartItem.quantity > 1) {
-                        const quantity = cartItem.quantity - 1;
+                switch (action) {
+                    case "increase": {
+                        const quantity = cartItem.quantity + 1;
 
                         const effectivePrice =
                             cartItem.offerPrice ?? cartItem.unitPrice;
@@ -1210,19 +1225,52 @@ export default factories.createCoreController(
                             },
                             transaction: trx,
                         });
-                    } else {
+
+                        break;
+                    }
+
+                    case "decrease": {
+                        if (cartItem.quantity > 1) {
+                            const quantity = cartItem.quantity - 1;
+
+                            const effectivePrice =
+                                cartItem.offerPrice ?? cartItem.unitPrice;
+
+                            let totalPrice = effectivePrice * quantity;
+
+                            if (cartItem.expressDelivery) {
+                                totalPrice +=
+                                    cartItem.expressDeliveryPrice * quantity;
+                            }
+
+                            totalPrice = Number(totalPrice.toFixed(2));
+
+                            await strapi.documents("api::cart-item.cart-item").update({
+                                documentId: cartItem.documentId,
+                                data: {
+                                    quantity,
+                                    totalPrice,
+                                },
+                                transaction: trx,
+                            });
+                        } else {
+                            await strapi.documents("api::cart-item.cart-item").delete({
+                                documentId: cartItem.documentId,
+                                transaction: trx,
+                            });
+                        }
+
+                        break;
+                    }
+
+                    case "remove": {
                         await strapi.documents("api::cart-item.cart-item").delete({
                             documentId: cartItem.documentId,
                             transaction: trx,
                         });
-                    }
-                }
 
-                if (action === "remove") {
-                    await strapi.documents("api::cart-item.cart-item").delete({
-                        documentId: cartItem.documentId,
-                        transaction: trx,
-                    });
+                        break;
+                    }
                 }
 
                 // ===============================================
@@ -1252,7 +1300,10 @@ export default factories.createCoreController(
                     await trx.commit();
 
                     return ctx.send({
-                        message: "Cart is now empty and has been deleted.",
+                        message:
+                            action === "remove"
+                                ? "Cart item removed and cart deleted successfully."
+                                : "Cart is now empty and has been deleted.",
                     });
                 }
 
@@ -1413,9 +1464,11 @@ export default factories.createCoreController(
                 };
 
                 const message =
-                    action === "decrease"
-                        ? "Cart item quantity updated successfully."
-                        : "Cart item removed successfully.";
+                    action === "increase"
+                        ? "Cart item quantity increased successfully."
+                        : action === "decrease"
+                            ? "Cart item quantity updated successfully."
+                            : "Cart item removed successfully.";
 
                 return ctx.send({
                     message,

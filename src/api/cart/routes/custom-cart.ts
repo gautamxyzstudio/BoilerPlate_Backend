@@ -10,11 +10,11 @@ export default {
         },
         {
             method: "PATCH",
-            path: "/cart-items/:id",
-            handler: "cart.removeItem",
+            path: "/update-cart-items/:id",
+            handler: "cart.updateCartItems",
             config: {
                 auth: {},
             },
-        }
+        },
     ]
 }
