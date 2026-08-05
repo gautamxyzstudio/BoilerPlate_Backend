@@ -7,6 +7,14 @@ export default {
             config: {
                 auth: {},
             },
+        },
+        {
+            method: "PATCH",
+            path: "/cart-items/:id",
+            handler: "cart.removeItem",
+            config: {
+                auth: {},
+            },
         }
     ]
 }

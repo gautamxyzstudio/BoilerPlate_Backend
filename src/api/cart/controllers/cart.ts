@@ -1011,13 +1011,13 @@ export default factories.createCoreController(
 
                     deliveryAddress: cartData.delivery_address
                         ? {
-                            documentId: cartData.pickup_address.documentId,
-                            addressType: cartData.pickup_address.addressType,
-                            streetAddress: cartData.pickup_address.streetAddress,
-                            fullAddress: cartData.pickup_address.fullAddress,
-                            city: cartData.pickup_address.city,
-                            state: cartData.pickup_address.state,
-                            postalCode: cartData.pickup_address.postalCode,
+                            documentId: cartData.delivery_address.documentId,
+                            addressType: cartData.delivery_address.addressType,
+                            streetAddress: cartData.delivery_address.streetAddress,
+                            fullAddress: cartData.delivery_address.fullAddress,
+                            city: cartData.delivery_address.city,
+                            state: cartData.delivery_address.state,
+                            postalCode: cartData.delivery_address.postalCode,
                         }
                         : null,
 
@@ -1090,6 +1090,341 @@ export default factories.createCoreController(
                 await trx.rollback();
 
                 strapi.log.error("Update Cart Error:", error);
+
+                return ctx.badRequest(
+                    error?.message || "Failed to update cart."
+                );
+            }
+        },
+
+        async removeItem(ctx) {
+            const trx = await strapi.db.transaction();
+
+            try {
+                // ===============================================
+                // Logged-in User
+                // ===============================================
+
+                const user = ctx.state.user;
+
+                if (!user) {
+                    return ctx.unauthorized("You must be logged in.");
+                }
+
+                // ===============================================
+                // User Profile
+                // ===============================================
+
+                const userProfile = await strapi.db
+                    .query("api::user-profile.user-profile")
+                    .findOne({
+                        where: {
+                            users_permissions_user: user.id,
+                        },
+                    });
+
+                if (!userProfile) {
+                    await trx.rollback();
+                    return ctx.badRequest("User profile not found.");
+                }
+
+                // ===============================================
+                // Cart Item
+                // ===============================================
+
+                const { id } = ctx.params;
+
+                const body = ctx.request.body?.data || ctx.request.body;
+
+                const { action } = body;
+
+                if (!["decrease", "remove"].includes(action)) {
+                    await trx.rollback();
+                    return ctx.badRequest(
+                        "Action must be either 'decrease' or 'remove'."
+                    );
+                }
+
+                const cartItem: any = await strapi
+                    .documents("api::cart-item.cart-item")
+                    .findOne({
+                        documentId: id,
+                        populate: {
+                            cart: {
+                                populate: {
+                                    user_profile: true,
+                                    cart_items: true,
+                                },
+                            },
+                        },
+                    });
+
+                if (!cartItem) {
+                    await trx.rollback();
+                    return ctx.notFound("Cart item not found.");
+                }
+
+
+
+                const cart: any = cartItem.cart;
+
+                // ===============================================
+                // Ownership Check
+                // ===============================================
+
+                if (
+                    !cart.user_profile ||
+                    cart.user_profile.documentId !== userProfile.documentId
+                ) {
+                    await trx.rollback();
+                    return ctx.forbidden(
+                        "You are not allowed to modify this cart."
+                    );
+                }
+
+                // ===============================================
+                // Update Cart Item
+                // ===============================================
+
+                if (action === "decrease") {
+                    if (cartItem.quantity > 1) {
+                        const quantity = cartItem.quantity - 1;
+
+                        const effectivePrice =
+                            cartItem.offerPrice ?? cartItem.unitPrice;
+
+                        let totalPrice = effectivePrice * quantity;
+
+                        if (cartItem.expressDelivery) {
+                            totalPrice +=
+                                cartItem.expressDeliveryPrice * quantity;
+                        }
+
+                        totalPrice = Number(totalPrice.toFixed(2));
+
+                        await strapi.documents("api::cart-item.cart-item").update({
+                            documentId: cartItem.documentId,
+                            data: {
+                                quantity,
+                                totalPrice,
+                            },
+                            transaction: trx,
+                        });
+                    } else {
+                        await strapi.documents("api::cart-item.cart-item").delete({
+                            documentId: cartItem.documentId,
+                            transaction: trx,
+                        });
+                    }
+                }
+
+                if (action === "remove") {
+                    await strapi.documents("api::cart-item.cart-item").delete({
+                        documentId: cartItem.documentId,
+                        transaction: trx,
+                    });
+                }
+
+                // ===============================================
+                // Fetch Remaining Items
+                // ===============================================
+
+                const remainingItems: any[] = await strapi
+                    .documents("api::cart-item.cart-item")
+                    .findMany({
+                        filters: {
+                            cart: {
+                                documentId: cart.documentId,
+                            },
+                        },
+                    });
+
+                // ===============================================
+                // Delete Empty Cart
+                // ===============================================
+
+                if (remainingItems.length === 0) {
+                    await strapi.documents("api::cart.cart").delete({
+                        documentId: cart.documentId,
+                        transaction: trx,
+                    });
+
+                    await trx.commit();
+
+                    return ctx.send({
+                        message: "Cart is now empty and has been deleted.",
+                    });
+                }
+
+                // ===============================================
+                // Recalculate Totals
+                // ===============================================
+                let subTotal = 0;
+
+                for (const item of remainingItems) {
+                    subTotal += Number(item.totalPrice || 0);
+                }
+
+                subTotal = Number(subTotal.toFixed(2));
+
+                const tax = 0;
+                const discount = 0;
+                const deliveryCharge = 0;
+
+                const grandTotal = Number(
+                    (
+                        subTotal +
+                        tax +
+                        deliveryCharge -
+                        discount
+                    ).toFixed(2)
+                );
+
+                await strapi.documents("api::cart.cart").update({
+                    documentId: cart.documentId,
+                    data: {
+                        subTotal,
+                        tax,
+                        discount,
+                        deliveryCharge,
+                        grandTotal,
+                    },
+                    transaction: trx,
+                });
+
+                await trx.commit();
+
+                // ===============================================
+                // Fetch Updated Cart
+                // ===============================================
+
+                const populatedCart = await strapi
+                    .documents("api::cart.cart")
+                    .findOne({
+                        documentId: cart.documentId,
+                        populate: {
+                            pickup_address: true,
+                            delivery_address: true,
+                            cart_items: {
+                                populate: {
+                                    service: true,
+                                    service_varient: {
+                                        populate: {
+                                            image: true,
+                                        },
+                                    },
+                                    service_pricing: true,
+                                },
+                            },
+                        },
+                    });
+
+                if (!populatedCart) {
+                    return ctx.notFound("Cart not found.");
+                }
+
+                const cartData: any = populatedCart;
+
+                const response = {
+                    documentId: cartData.documentId,
+                    createdAt: cartData.createdAt,
+
+                    pickupAddress: cartData.pickup_address
+                        ? {
+                            documentId: cartData.pickup_address.documentId,
+                            addressType: cartData.pickup_address.addressType,
+                            streetAddress: cartData.pickup_address.streetAddress,
+                            fullAddress: cartData.pickup_address.fullAddress,
+                            city: cartData.pickup_address.city,
+                            state: cartData.pickup_address.state,
+                            postalCode: cartData.pickup_address.postalCode,
+                        }
+                        : null,
+
+                    deliveryAddress: cartData.delivery_address
+                        ? {
+                            documentId: cartData.delivery_address.documentId,
+                            addressType: cartData.delivery_address.addressType,
+                            streetAddress: cartData.delivery_address.streetAddress,
+                            fullAddress: cartData.delivery_address.fullAddress,
+                            city: cartData.delivery_address.city,
+                            state: cartData.delivery_address.state,
+                            postalCode: cartData.delivery_address.postalCode,
+                        }
+                        : null,
+
+                    pickupDate: cartData.pickupDate,
+                    pickupTime: cartData.pickupTime,
+
+                    deliveryDate: cartData.deliveryDate,
+                    deliveryTime: cartData.deliveryTime,
+
+                    appointmentDate: cartData.appointmentDate,
+                    appointmentTime: cartData.appointmentTime,
+
+                    specialInstructions: cartData.specialInstructions,
+
+                    subTotal: cartData.subTotal,
+                    tax: cartData.tax,
+                    discount: cartData.discount,
+                    deliveryCharge: cartData.deliveryCharge,
+                    grandTotal: cartData.grandTotal,
+
+                    cartItems: (cartData.cart_items || []).map((item: any) => ({
+                        documentId: item.documentId,
+
+                        quantity: item.quantity,
+                        unitPrice: item.unitPrice,
+                        offerPrice: item.offerPrice,
+                        totalPrice: item.totalPrice,
+
+                        expressDelivery: item.expressDelivery,
+                        expressDeliveryPrice: item.expressDeliveryPrice,
+
+                        remarks: item.remarks,
+
+                        service: {
+                            documentId: item.service.documentId,
+                            name: item.service.name,
+                            pricingModel: item.service.pricingModel,
+                            scheduleType: item.service.scheduleType,
+                        },
+
+                        serviceVariant: item.service_varient
+                            ? {
+                                documentId: item.service_varient.documentId,
+                                name: item.service_varient.name,
+                                expressDeliveryAvailable:
+                                    item.service_varient.expressDeliveryAvailable,
+                                image: item.service_varient.image?.url ?? null,
+                            }
+                            : null,
+
+                        servicePricing: item.service_pricing
+                            ? {
+                                documentId: item.service_pricing.documentId,
+                                price: item.service_pricing.price,
+                                offerPrice: item.service_pricing.offerPrice,
+                                expressDeliveryPrice:
+                                    item.service_pricing.expressDeliveryPrice,
+                            }
+                            : null,
+                    })),
+                };
+
+                const message =
+                    action === "decrease"
+                        ? "Cart item quantity updated successfully."
+                        : "Cart item removed successfully.";
+
+                return ctx.send({
+                    message,
+                    data: response,
+                });
+            } catch (error: any) {
+                await trx.rollback();
+
+                strapi.log.error("Remove Cart Item Error:", error);
 
                 return ctx.badRequest(
                     error?.message || "Failed to update cart."
