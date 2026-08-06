@@ -8,13 +8,5 @@ export default {
                 auth: {},
             },
         },
-        {
-            method: "PATCH",
-            path: "/update-cart-items/:id",
-            handler: "cart.updateCartItems",
-            config: {
-                auth: {},
-            },
-        },
     ]
 }
