@@ -141,19 +141,17 @@ export default factories.createCoreController(
                 return ctx.badRequest("User profile not found.");
             }
 
-            const { id } = ctx.params;
+            const documentId = ctx.params.id;
+
             const body = ctx.request.body?.data || ctx.request.body;
 
             // Find the address
-            const address = await strapi.entityService.findOne(
-                "api::address.address" as any,
-                id,
-                {
-                    populate: {
-                        user_profile: true,
-                    },
-                }
-            );
+            const address = await strapi.documents("api::address.address").findOne({
+                documentId,
+                populate: {
+                    user_profile: true,
+                },
+            });
 
             if (!address) {
                 return ctx.notFound("Address not found.");
@@ -165,20 +163,17 @@ export default factories.createCoreController(
             }
 
             // Update the address
-            const updatedAddress = await strapi.entityService.update(
-                "api::address.address",
-                id,
-                {
-                    data: body,
-                    populate: "*",
-                }
-            );
+            const updatedAddress = await strapi.documents("api::address.address").update({
+                documentId,
+                data: body,
+                populate: "*",
+            });
 
             return updatedAddress;
         },
 
         async delete(ctx) {
-            console.log("DELETE CONTROLLER HIT");
+
             const user = ctx.state.user;
 
             if (!user) {
@@ -199,17 +194,16 @@ export default factories.createCoreController(
                 return ctx.badRequest("User profile not found.");
             }
 
-            const { id } = ctx.params;
+            const documentId = ctx.params.id;
+            console.log(ctx.params.id, "ctx.params.id");
 
             // Find the address
-            const address = await strapi.entityService.findOne(
-                "api::address.address" as any,
-                id,
-                {
-                    populate: {
-                        user_profile: true,
-                    },
-                }
+            const address = await strapi.documents("api::address.address").findOne({
+                documentId,
+                populate: {
+                    user_profile: true,
+                },
+            }
             );
 
             if (!address) {
@@ -217,17 +211,19 @@ export default factories.createCoreController(
             }
 
             // Check ownership
-            if ((address.user_profile?.id !== userProfile.id)) {
+            if (address.user_profile?.documentId !== userProfile.documentId) {
                 return ctx.forbidden("You are not allowed to delete this address.");
             }
 
             // Delete the address
-            const deletedAddress = await strapi.entityService.delete(
-                "api::address.address",
-                id
-            );
+            const deletedAddress = await strapi.documents("api::address.address").delete({
+                documentId
+            });
 
-            return deletedAddress;
+            return ctx.send({
+                message: "Address deleted successfully.",
+                data: deletedAddress,
+            });
         },
 
         async setDefaultAddress(ctx) {
@@ -251,24 +247,21 @@ export default factories.createCoreController(
                 return ctx.badRequest("User profile not found.");
             }
 
-            const { id } = ctx.params;
+            const { documentId } = ctx.params;
 
             // Check if the address exists and belongs to the logged-in user
-            const address = await strapi.entityService.findOne(
-                "api::address.address" as any,
-                id,
-                {
-                    populate: {
-                        user_profile: true,
-                    },
-                }
-            );
+            const address = await strapi.documents("api::address.address").findOne({
+                documentId,
+                populate: {
+                    user_profile: true,
+                },
+            });
 
             if (!address) {
                 return ctx.notFound("Address not found.");
             }
 
-            if (address.users_permissions_user?.id !== user.id) {
+            if (address.user_profile?.documentId !== userProfile.documentId) {
                 return ctx.forbidden(
                     "You are not allowed to set this address as default."
                 );
@@ -280,19 +273,21 @@ export default factories.createCoreController(
             }
 
             // Get all addresses of the logged-in user
-            const addresses = await strapi.entityService.findMany(
-                "api::address.address",
-                {
-                    filters: {
-                        user_profile: userProfile.id,
+            const addresses = await strapi.documents("api::address.address").findMany({
+                filters: {
+                    user_profile: {
+                        documentId: {
+                            $eq: userProfile.documentId,
+                        },
                     },
-                }
-            );
+                },
+            });
 
             // Remove default from all addresses
             await Promise.all(
                 addresses.map((item: any) =>
-                    strapi.entityService.update("api::address.address", item.id, {
+                    strapi.documents("api::address.address").update({
+                        documentId: item.documentId,
                         data: {
                             isDefaultAddress: false,
                         },
@@ -301,18 +296,18 @@ export default factories.createCoreController(
             );
 
             // Set the selected address as default
-            const updatedAddress = await strapi.entityService.update(
-                "api::address.address",
-                id,
-                {
-                    data: {
-                        isDefaultAddress: true,
-                    },
-                    populate: "*",
-                }
-            );
+            const updatedAddress = await strapi.documents("api::address.address").update({
+                documentId,
+                data: {
+                    isDefaultAddress: true,
+                },
+                populate: "*",
+            });
 
-            return updatedAddress;
+            return ctx.send({
+                message: "Default address updated successfully.",
+                data: updatedAddress,
+            });
         },
 
         async getDefaultAddress(ctx) {

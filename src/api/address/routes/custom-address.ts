@@ -2,7 +2,7 @@ export default {
     routes: [
         {
             method: "PUT",
-            path: "/addresses/:id/set-default-address",
+            path: "/addresses/:documentId/set-default-address",
             handler: "address.setDefaultAddress",
             config: {
                 auth: {},

@@ -3,6 +3,7 @@
  */
 
 import { factories } from '@strapi/strapi';
+import service from '../../service/services/service';
 
 export default factories.createCoreController(
     "api::cart.cart",
@@ -27,6 +28,19 @@ export default factories.createCoreController(
 
                 const {
                     items,
+                    pickup_address,
+                    delivery_address,
+
+                    pickupDate,
+                    pickupTime,
+
+                    deliveryDate,
+                    deliveryTime,
+
+                    appointmentDate,
+                    appointmentTime,
+
+                    specialInstructions,
                 } = body;
 
                 // ===============================================
@@ -55,6 +69,70 @@ export default factories.createCoreController(
                     return ctx.badRequest("User profile not found.");
                 }
 
+
+                // ===============================================
+                // Validate Pickup Address
+                // ===============================================
+
+                let pickupAddress = null;
+
+                if (pickup_address) {
+                    pickupAddress = await strapi
+                        .documents("api::address.address")
+                        .findOne({
+                            documentId: pickup_address,
+                            populate: {
+                                user_profile: true,
+                            },
+                        });
+
+                    if (!pickupAddress) {
+
+                        return ctx.badRequest("Pickup address not found.");
+                    }
+
+                    if (
+                        pickupAddress.user_profile?.documentId !==
+                        userProfile.documentId
+                    ) {
+
+                        return ctx.forbidden(
+                            "Pickup address does not belong to you."
+                        );
+                    }
+                }
+
+                // ===============================================
+                // Validate Delivery Address
+                // ===============================================
+
+                let deliveryAddress = null;
+
+                if (delivery_address) {
+                    deliveryAddress = await strapi
+                        .documents("api::address.address")
+                        .findOne({
+                            documentId: delivery_address,
+                            populate: {
+                                user_profile: true,
+                            },
+                        });
+
+                    if (!deliveryAddress) {
+
+                        return ctx.badRequest("Delivery address not found.");
+                    }
+
+                    if (
+                        deliveryAddress.user_profile?.documentId !==
+                        userProfile.documentId
+                    ) {
+
+                        return ctx.forbidden(
+                            "Delivery address does not belong to you."
+                        );
+                    }
+                }
 
                 // ===============================================
                 // Validate Duplicate Items
@@ -101,13 +179,15 @@ export default factories.createCoreController(
                 let subTotal = 0;
 
                 const preparedCartItems: any[] = [];
+                let scheduleType: string | null = null;
 
                 for (const item of items) {
+
                     // ===============================================
                     // Fetch Service
                     // ===============================================
 
-                    const service = await strapi.documents("api::service.service").findOne({
+                    const service: any = await strapi.documents("api::service.service").findOne({
                         documentId: item.service,
                         populate: {
                             service_pricings: true,
@@ -119,10 +199,15 @@ export default factories.createCoreController(
                         },
                     });
 
+
+
                     if (!service) {
                         throw new Error("Service not found.");
                     }
 
+                    if (!scheduleType) {
+                        scheduleType = service.scheduleType;
+                    }
                     let pricing: any = null;
                     let variant: any = null;
 
@@ -258,6 +343,62 @@ export default factories.createCoreController(
                         remarks: item.remarks || null,
                     });
                 }
+
+                // ===============================================
+                // Validate Schedule
+                // ===============================================
+
+                if (scheduleType === "pickup_delivery") {
+
+                    if (!pickup_address) {
+
+                        return ctx.badRequest("Pickup address is required.");
+                    }
+
+                    if (!delivery_address) {
+
+                        return ctx.badRequest("Delivery address is required.");
+                    }
+
+                    if (!pickupDate) {
+
+                        return ctx.badRequest("Pickup date is required.");
+                    }
+
+                    if (!pickupTime) {
+
+                        return ctx.badRequest("Pickup time is required.");
+                    }
+
+                    if (!deliveryDate) {
+
+                        return ctx.badRequest("Delivery date is required.");
+                    }
+
+                    if (!deliveryTime) {
+
+                        return ctx.badRequest("Delivery time is required.");
+                    }
+                }
+
+                if (scheduleType === "appointment") {
+
+                    if (!pickup_address) {
+
+                        return ctx.badRequest("Pickup address is required.");
+                    }
+
+                    if (!appointmentDate) {
+
+                        return ctx.badRequest("Appointment date is required.");
+                    }
+
+                    if (!appointmentTime) {
+
+                        return ctx.badRequest("Appointment time is required.");
+                    }
+                }
+
                 // ===============================================
                 // Find Existing Cart
                 // ===============================================
@@ -296,6 +437,19 @@ export default factories.createCoreController(
                         .create({
                             data: {
                                 user_profile: userProfile.documentId,
+                                pickup_address,
+                                delivery_address,
+
+                                pickupDate,
+                                pickupTime,
+
+                                deliveryDate,
+                                deliveryTime,
+
+                                appointmentDate,
+                                appointmentTime,
+
+                                specialInstructions,
                                 subTotal: 0,
                                 tax: 0,
                                 discount: 0,
@@ -446,6 +600,19 @@ export default factories.createCoreController(
                     documentId: cart.documentId,
                     data: {
                         subTotal,
+                        pickup_address: pickup_address || null,
+                        delivery_address: delivery_address || null,
+
+                        pickupDate: pickupDate || null,
+                        pickupTime: pickupTime || null,
+
+                        deliveryDate: deliveryDate || null,
+                        deliveryTime: deliveryTime || null,
+
+                        appointmentDate: appointmentDate || null,
+                        appointmentTime: appointmentTime || null,
+
+                        specialInstructions: specialInstructions || null,
                         tax,
                         discount,
                         deliveryCharge,
@@ -505,7 +672,40 @@ export default factories.createCoreController(
                     discount: cartData.discount,
                     deliveryCharge: cartData.deliveryCharge,
                     grandTotal: cartData.grandTotal,
+                    pickupAddress: cartData.pickup_address
+                        ? {
+                            documentId: cartData.pickup_address.documentId,
+                            addressType: cartData.pickup_address.addressType,
+                            streetAddress: cartData.pickup_address.streetAddress,
+                            fullAddress: cartData.pickup_address.fullAddress,
+                            city: cartData.pickup_address.city,
+                            state: cartData.pickup_address.state,
+                            postalCode: cartData.pickup_address.postalCode,
+                        }
+                        : null,
 
+                    deliveryAddress: cartData.delivery_address
+                        ? {
+                            documentId: cartData.delivery_address.documentId,
+                            addressType: cartData.delivery_address.addressType,
+                            streetAddress: cartData.delivery_address.streetAddress,
+                            fullAddress: cartData.delivery_address.fullAddress,
+                            city: cartData.delivery_address.city,
+                            state: cartData.delivery_address.state,
+                            postalCode: cartData.delivery_address.postalCode,
+                        }
+                        : null,
+
+                    pickupDate: cartData.pickupDate,
+                    pickupTime: cartData.pickupTime,
+
+                    deliveryDate: cartData.deliveryDate,
+                    deliveryTime: cartData.deliveryTime,
+
+                    appointmentDate: cartData.appointmentDate,
+                    appointmentTime: cartData.appointmentTime,
+
+                    specialInstructions: cartData.specialInstructions,
                     cartItems: (cartData.cart_items ?? []).map((item: any) => ({
                         documentId: item.documentId,
 
