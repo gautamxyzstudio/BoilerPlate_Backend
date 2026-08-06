@@ -226,7 +226,7 @@ export default factories.createCoreController(
 
                         strapi.log.error("Payment Gateway Error:", error);
 
-                       return ctx.badRequest("Unable to initialize payment.");
+                        return ctx.badRequest("Unable to initialize payment.");
 
                     }
 
@@ -316,6 +316,20 @@ export default factories.createCoreController(
                             transaction: trx,
                         });
                     }
+
+                    // ===============================================
+                    // Create Initial Order Status History
+                    // ===============================================
+
+                    await strapi.documents("api::order-status-history.order-status-history" as any).create({
+                        data: {
+                            order: createdOrder.documentId,
+                            orderStatus: "pending",
+                            updatedByType: "system",
+                
+                        },
+                        transaction: trx,
+                    });
 
                     // ===============================================
                     // Create Payment Collection 

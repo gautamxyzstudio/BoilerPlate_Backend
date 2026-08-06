@@ -723,6 +723,58 @@ export interface ApiOrderItemOrderItem extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiOrderStatusHistoryOrderStatusHistory
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'order_status_histories';
+  info: {
+    displayName: 'Order Status History';
+    pluralName: 'order-status-histories';
+    singularName: 'order-status-history';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::order-status-history.order-status-history'
+    > &
+      Schema.Attribute.Private;
+    order: Schema.Attribute.Relation<'manyToOne', 'api::order.order'>;
+    orderStatus: Schema.Attribute.Enumeration<
+      [
+        'pending',
+        'pickup_assigned',
+        'picked_up',
+        'processing',
+        'out_for_delivery',
+        'delivered',
+        'professional_assigned',
+        'professional_on_the_way',
+        'arrived',
+        'service_started',
+        'completed',
+        'cancelled',
+        'refunded',
+      ]
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    status_updated_by: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    updatedByType: Schema.Attribute.Enumeration<['system', 'admin', 'staff']> &
+      Schema.Attribute.DefaultTo<'system'>;
+  };
+}
+
 export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
   collectionName: 'orders';
   info: {
@@ -740,6 +792,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    deliveredAt: Schema.Attribute.DateTime;
     delivery_address: Schema.Attribute.Relation<
       'manyToOne',
       'api::address.address'
@@ -756,16 +809,13 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       'oneToMany',
       'api::order-item.order-item'
     >;
+    order_status_histories: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::order-status-history.order-status-history'
+    >;
     orderNo: Schema.Attribute.String & Schema.Attribute.Unique;
     orderStatus: Schema.Attribute.Enumeration<
-      [
-        'pending',
-        'shipped',
-        'out_for_delivery',
-        'delivered',
-        'cancelled',
-        'refunded',
-      ]
+      ['pending', 'in_progress', 'completed', 'cancelled', 'refunded']
     > &
       Schema.Attribute.DefaultTo<'pending'>;
     payment_collections: Schema.Attribute.Relation<
@@ -777,12 +827,14 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       ['pending', 'paid', 'failed', 'refunded']
     > &
       Schema.Attribute.DefaultTo<'pending'>;
+    pickedUpAt: Schema.Attribute.DateTime;
     pickup_address: Schema.Attribute.Relation<
       'manyToOne',
       'api::address.address'
     >;
     pickupDate: Schema.Attribute.Date;
     pickupTime: Schema.Attribute.Time;
+    processingStartedAt: Schema.Attribute.DateTime;
     publishedAt: Schema.Attribute.DateTime;
     specialInstruction: Schema.Attribute.Text;
     startedAt: Schema.Attribute.DateTime;
@@ -1632,6 +1684,10 @@ export interface PluginUsersPermissionsUser
       'plugin::users-permissions.user'
     > &
       Schema.Attribute.Private;
+    order_status_histories: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::order-status-history.order-status-history'
+    >;
     password: Schema.Attribute.Password &
       Schema.Attribute.Private &
       Schema.Attribute.SetMinMaxLength<{
@@ -1677,6 +1733,7 @@ declare module '@strapi/strapi' {
       'api::driver-detail.driver-detail': ApiDriverDetailDriverDetail;
       'api::driver-document.driver-document': ApiDriverDocumentDriverDocument;
       'api::order-item.order-item': ApiOrderItemOrderItem;
+      'api::order-status-history.order-status-history': ApiOrderStatusHistoryOrderStatusHistory;
       'api::order.order': ApiOrderOrder;
       'api::payment-collection.payment-collection': ApiPaymentCollectionPaymentCollection;
       'api::pending-signup.pending-signup': ApiPendingSignupPendingSignup;

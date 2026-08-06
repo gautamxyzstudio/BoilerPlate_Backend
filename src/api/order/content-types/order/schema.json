@@ -49,9 +49,8 @@
       "default": "pending",
       "enum": [
         "pending",
-        "shipped",
-        "out_for_delivery",
-        "delivered",
+        "in_progress",
+        "completed",
         "cancelled",
         "refunded"
       ]
@@ -66,6 +65,15 @@
       "type": "datetime"
     },
     "completedAt": {
+      "type": "datetime"
+    },
+    "pickedUpAt": {
+      "type": "datetime"
+    },
+    "processingStartedAt": {
+      "type": "datetime"
+    },
+    "deliveredAt": {
       "type": "datetime"
     },
     "subTotal": {
@@ -114,6 +122,12 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::payment-collection.payment-collection",
+      "mappedBy": "order"
+    },
+    "order_status_histories": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order-status-history.order-status-history",
       "mappedBy": "order"
     }
   }

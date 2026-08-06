@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "order_status_histories",
+  "info": {
+    "singularName": "order-status-history",
+    "pluralName": "order-status-histories",
+    "displayName": "Order Status History"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "order": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::order.order",
+      "inversedBy": "order_status_histories"
+    },
+    "orderStatus": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "pickup_assigned",
+        "picked_up",
+        "processing",
+        "out_for_delivery",
+        "delivered",
+        "professional_assigned",
+        "professional_on_the_way",
+        "arrived",
+        "service_started",
+        "completed",
+        "cancelled",
+        "refunded"
+      ]
+    },
+    "status_updated_by": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "order_status_histories"
+    },
+    "updatedByType": {
+      "type": "enumeration",
+      "enum": [
+        "system",
+        "admin",
+        "staff"
+      ],
+      "default": "system"
+    }
+  }
+}

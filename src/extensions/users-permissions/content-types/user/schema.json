@@ -80,6 +80,12 @@
       "relation": "oneToOne",
       "target": "api::driver-detail.driver-detail",
       "mappedBy": "users_permissions_user"
+    },
+    "order_status_histories": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order-status-history.order-status-history",
+      "mappedBy": "status_updated_by"
     }
   }
 }
