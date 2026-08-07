@@ -9,23 +9,16 @@ export default {
       const { identifier, password } = body;
 
       if (!identifier || !password) {
-        return ctx.badRequest(
-          "Identifier and password are required."
-        );
+        return ctx.badRequest("Identifier and password are required.");
       }
 
       const normalized = normalizeIdentifier(identifier);
 
       if (!normalized) {
-        return ctx.badRequest(
-          "Please enter a valid email or phone number."
-        );
+        return ctx.badRequest("Please enter a valid email or phone number.");
       }
 
-      const {
-        identifier: normalizedIdentifier,
-        identifierType,
-      } = normalized;
+      const { identifier: normalizedIdentifier, identifierType } = normalized;
 
       // Find user
       const user = await strapi.db
@@ -37,6 +30,11 @@ export default {
               : { phoneNumber: normalizedIdentifier },
           populate: {
             role: true,
+            user_profile: {
+              populate: {
+                profileImage: true,
+              },
+            },
           },
         });
 
@@ -45,16 +43,11 @@ export default {
       }
 
       if (user.blocked) {
-        return ctx.badRequest(
-          "Your account has been blocked."
-        );
+        return ctx.badRequest("Your account has been blocked.");
       }
 
       // Verify password
-      const isPasswordValid = await bcrypt.compare(
-        password,
-        user.password
-      );
+      const isPasswordValid = await bcrypt.compare(password, user.password);
 
       if (!isPasswordValid) {
         return ctx.badRequest("Invalid email or password.");
@@ -76,9 +69,7 @@ export default {
     } catch (error) {
       strapi.log.error("Login Error:", error);
 
-      return ctx.internalServerError(
-        "Login failed."
-      );
+      return ctx.internalServerError("Login failed.");
     }
   },
 };
