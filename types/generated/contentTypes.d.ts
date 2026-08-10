@@ -745,7 +745,12 @@ export interface ApiOrderStatusHistoryOrderStatusHistory
     > &
       Schema.Attribute.Private;
     order: Schema.Attribute.Relation<'manyToOne', 'api::order.order'>;
-    orderStatus: Schema.Attribute.Enumeration<
+    publishedAt: Schema.Attribute.DateTime;
+    status_updated_by: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    statusUpdatedTo: Schema.Attribute.Enumeration<
       [
         'pending',
         'pickup_assigned',
@@ -761,11 +766,6 @@ export interface ApiOrderStatusHistoryOrderStatusHistory
         'cancelled',
         'refunded',
       ]
-    >;
-    publishedAt: Schema.Attribute.DateTime;
-    status_updated_by: Schema.Attribute.Relation<
-      'manyToOne',
-      'plugin::users-permissions.user'
     >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -815,7 +815,21 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     >;
     orderNo: Schema.Attribute.String & Schema.Attribute.Unique;
     orderStatus: Schema.Attribute.Enumeration<
-      ['pending', 'in_progress', 'completed', 'cancelled', 'refunded']
+      [
+        'pending',
+        'pickup_assigned',
+        'picked_up',
+        'processing',
+        'out_for_delivery',
+        'delivered',
+        'professional_assigned',
+        'professional_on_the_way',
+        'arrived',
+        'service_started',
+        'completed',
+        'cancelled',
+        'refunded',
+      ]
     > &
       Schema.Attribute.DefaultTo<'pending'>;
     payment_collections: Schema.Attribute.Relation<

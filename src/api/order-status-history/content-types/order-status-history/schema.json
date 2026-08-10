@@ -17,7 +17,7 @@
       "target": "api::order.order",
       "inversedBy": "order_status_histories"
     },
-    "orderStatus": {
+    "statusUpdatedTo": {
       "type": "enumeration",
       "enum": [
         "pending",

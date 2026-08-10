@@ -47,9 +47,17 @@
     "orderStatus": {
       "type": "enumeration",
       "default": "pending",
-      "enum": [
+     "enum": [
         "pending",
-        "in_progress",
+        "pickup_assigned",
+        "picked_up",
+        "processing",
+        "out_for_delivery",
+        "delivered",
+        "professional_assigned",
+        "professional_on_the_way",
+        "arrived",
+        "service_started",
         "completed",
         "cancelled",
         "refunded"

@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2026-08-07T11:25:26.657Z"
+    "x-generation-date": "2026-08-10T07:30:40.627Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -10045,7 +10045,15 @@
                   "type": "string",
                   "enum": [
                     "pending",
-                    "in_progress",
+                    "pickup_assigned",
+                    "picked_up",
+                    "processing",
+                    "out_for_delivery",
+                    "delivered",
+                    "professional_assigned",
+                    "professional_on_the_way",
+                    "arrived",
+                    "service_started",
                     "completed",
                     "cancelled",
                     "refunded"
@@ -12104,7 +12112,7 @@
                                       }
                                     }
                                   },
-                                  "orderStatus": {
+                                  "statusUpdatedTo": {
                                     "type": "string",
                                     "enum": [
                                       "pending",
@@ -16878,7 +16886,15 @@
                                         "type": "string",
                                         "enum": [
                                           "pending",
-                                          "in_progress",
+                                          "pickup_assigned",
+                                          "picked_up",
+                                          "processing",
+                                          "out_for_delivery",
+                                          "delivered",
+                                          "professional_assigned",
+                                          "professional_on_the_way",
+                                          "arrived",
+                                          "service_started",
                                           "completed",
                                           "cancelled",
                                           "refunded"
@@ -18784,7 +18800,7 @@
                                       }
                                     }
                                   },
-                                  "orderStatus": {
+                                  "statusUpdatedTo": {
                                     "type": "string",
                                     "enum": [
                                       "pending",
@@ -21639,7 +21655,15 @@
                                               "type": "string",
                                               "enum": [
                                                 "pending",
-                                                "in_progress",
+                                                "pickup_assigned",
+                                                "picked_up",
+                                                "processing",
+                                                "out_for_delivery",
+                                                "delivered",
+                                                "professional_assigned",
+                                                "professional_on_the_way",
+                                                "arrived",
+                                                "service_started",
                                                 "completed",
                                                 "cancelled",
                                                 "refunded"
@@ -22752,7 +22776,7 @@
                                                                   }
                                                                 }
                                                               },
-                                                              "orderStatus": {
+                                                              "statusUpdatedTo": {
                                                                 "type": "string",
                                                                 "enum": [
                                                                   "pending",
@@ -26128,7 +26152,15 @@
                           "type": "string",
                           "enum": [
                             "pending",
-                            "in_progress",
+                            "pickup_assigned",
+                            "picked_up",
+                            "processing",
+                            "out_for_delivery",
+                            "delivered",
+                            "professional_assigned",
+                            "professional_on_the_way",
+                            "arrived",
+                            "service_started",
                             "completed",
                             "cancelled",
                             "refunded"
@@ -28341,7 +28373,7 @@
                                   }
                                 }
                               },
-                              "orderStatus": {
+                              "statusUpdatedTo": {
                                 "type": "string",
                                 "enum": [
                                   "pending",
@@ -31084,7 +31116,15 @@
                               "type": "string",
                               "enum": [
                                 "pending",
-                                "in_progress",
+                                "pickup_assigned",
+                                "picked_up",
+                                "processing",
+                                "out_for_delivery",
+                                "delivered",
+                                "professional_assigned",
+                                "professional_on_the_way",
+                                "arrived",
+                                "service_started",
                                 "completed",
                                 "cancelled",
                                 "refunded"
@@ -33297,7 +33337,7 @@
                                       }
                                     }
                                   },
-                                  "orderStatus": {
+                                  "statusUpdatedTo": {
                                     "type": "string",
                                     "enum": [
                                       "pending",
@@ -34212,7 +34252,15 @@
                 "type": "string",
                 "enum": [
                   "pending",
-                  "in_progress",
+                  "pickup_assigned",
+                  "picked_up",
+                  "processing",
+                  "out_for_delivery",
+                  "delivered",
+                  "professional_assigned",
+                  "professional_on_the_way",
+                  "arrived",
+                  "service_started",
                   "completed",
                   "cancelled",
                   "refunded"
@@ -34458,7 +34506,15 @@
             "type": "string",
             "enum": [
               "pending",
-              "in_progress",
+              "pickup_assigned",
+              "picked_up",
+              "processing",
+              "out_for_delivery",
+              "delivered",
+              "professional_assigned",
+              "professional_on_the_way",
+              "arrived",
+              "service_started",
               "completed",
               "cancelled",
               "refunded"
@@ -34629,7 +34685,15 @@
                       "type": "string",
                       "enum": [
                         "pending",
-                        "in_progress",
+                        "pickup_assigned",
+                        "picked_up",
+                        "processing",
+                        "out_for_delivery",
+                        "delivered",
+                        "professional_assigned",
+                        "professional_on_the_way",
+                        "arrived",
+                        "service_started",
                         "completed",
                         "cancelled",
                         "refunded"
@@ -36628,7 +36692,7 @@
                                       }
                                     }
                                   },
-                                  "orderStatus": {
+                                  "statusUpdatedTo": {
                                     "type": "string",
                                     "enum": [
                                       "pending",
@@ -39460,7 +39524,15 @@
                 "type": "string",
                 "enum": [
                   "pending",
-                  "in_progress",
+                  "pickup_assigned",
+                  "picked_up",
+                  "processing",
+                  "out_for_delivery",
+                  "delivered",
+                  "professional_assigned",
+                  "professional_on_the_way",
+                  "arrived",
+                  "service_started",
                   "completed",
                   "cancelled",
                   "refunded"
@@ -41519,7 +41591,7 @@
                                     }
                                   }
                                 },
-                                "orderStatus": {
+                                "statusUpdatedTo": {
                                   "type": "string",
                                   "enum": [
                                     "pending",
@@ -44130,7 +44202,7 @@
                 ],
                 "example": "string or id"
               },
-              "orderStatus": {
+              "statusUpdatedTo": {
                 "type": "string",
                 "enum": [
                   "pending",
@@ -44296,7 +44368,15 @@
                 "type": "string",
                 "enum": [
                   "pending",
-                  "in_progress",
+                  "pickup_assigned",
+                  "picked_up",
+                  "processing",
+                  "out_for_delivery",
+                  "delivered",
+                  "professional_assigned",
+                  "professional_on_the_way",
+                  "arrived",
+                  "service_started",
                   "completed",
                   "cancelled",
                   "refunded"
@@ -46355,7 +46435,7 @@
                                     }
                                   }
                                 },
-                                "orderStatus": {
+                                "statusUpdatedTo": {
                                   "type": "string",
                                   "enum": [
                                     "pending",
@@ -48782,7 +48862,7 @@
               }
             }
           },
-          "orderStatus": {
+          "statusUpdatedTo": {
             "type": "string",
             "enum": [
               "pending",
@@ -49092,7 +49172,15 @@
                 "type": "string",
                 "enum": [
                   "pending",
-                  "in_progress",
+                  "pickup_assigned",
+                  "picked_up",
+                  "processing",
+                  "out_for_delivery",
+                  "delivered",
+                  "professional_assigned",
+                  "professional_on_the_way",
+                  "arrived",
+                  "service_started",
                   "completed",
                   "cancelled",
                   "refunded"
@@ -51151,7 +51239,7 @@
                                     }
                                   }
                                 },
-                                "orderStatus": {
+                                "statusUpdatedTo": {
                                   "type": "string",
                                   "enum": [
                                     "pending",
@@ -57848,7 +57936,15 @@
                                           "type": "string",
                                           "enum": [
                                             "pending",
-                                            "in_progress",
+                                            "pickup_assigned",
+                                            "picked_up",
+                                            "processing",
+                                            "out_for_delivery",
+                                            "delivered",
+                                            "professional_assigned",
+                                            "professional_on_the_way",
+                                            "arrived",
+                                            "service_started",
                                             "completed",
                                             "cancelled",
                                             "refunded"
@@ -58961,7 +59057,7 @@
                                                               }
                                                             }
                                                           },
-                                                          "orderStatus": {
+                                                          "statusUpdatedTo": {
                                                             "type": "string",
                                                             "enum": [
                                                               "pending",
@@ -62952,7 +63048,15 @@
                                       "type": "string",
                                       "enum": [
                                         "pending",
-                                        "in_progress",
+                                        "pickup_assigned",
+                                        "picked_up",
+                                        "processing",
+                                        "out_for_delivery",
+                                        "delivered",
+                                        "professional_assigned",
+                                        "professional_on_the_way",
+                                        "arrived",
+                                        "service_started",
                                         "completed",
                                         "cancelled",
                                         "refunded"
@@ -64065,7 +64169,7 @@
                                                           }
                                                         }
                                                       },
-                                                      "orderStatus": {
+                                                      "statusUpdatedTo": {
                                                         "type": "string",
                                                         "enum": [
                                                           "pending",
@@ -67748,7 +67852,15 @@
                                     "type": "string",
                                     "enum": [
                                       "pending",
-                                      "in_progress",
+                                      "pickup_assigned",
+                                      "picked_up",
+                                      "processing",
+                                      "out_for_delivery",
+                                      "delivered",
+                                      "professional_assigned",
+                                      "professional_on_the_way",
+                                      "arrived",
+                                      "service_started",
                                       "completed",
                                       "cancelled",
                                       "refunded"
@@ -68861,7 +68973,7 @@
                                                         }
                                                       }
                                                     },
-                                                    "orderStatus": {
+                                                    "statusUpdatedTo": {
                                                       "type": "string",
                                                       "enum": [
                                                         "pending",
@@ -72783,7 +72895,15 @@
                                     "type": "string",
                                     "enum": [
                                       "pending",
-                                      "in_progress",
+                                      "pickup_assigned",
+                                      "picked_up",
+                                      "processing",
+                                      "out_for_delivery",
+                                      "delivered",
+                                      "professional_assigned",
+                                      "professional_on_the_way",
+                                      "arrived",
+                                      "service_started",
                                       "completed",
                                       "cancelled",
                                       "refunded"
@@ -73896,7 +74016,7 @@
                                                         }
                                                       }
                                                     },
-                                                    "orderStatus": {
+                                                    "statusUpdatedTo": {
                                                       "type": "string",
                                                       "enum": [
                                                         "pending",
@@ -77580,7 +77700,15 @@
                           "type": "string",
                           "enum": [
                             "pending",
-                            "in_progress",
+                            "pickup_assigned",
+                            "picked_up",
+                            "processing",
+                            "out_for_delivery",
+                            "delivered",
+                            "professional_assigned",
+                            "professional_on_the_way",
+                            "arrived",
+                            "service_started",
                             "completed",
                             "cancelled",
                             "refunded"
@@ -79793,7 +79921,7 @@
                                   }
                                 }
                               },
-                              "orderStatus": {
+                              "statusUpdatedTo": {
                                 "type": "string",
                                 "enum": [
                                   "pending",
