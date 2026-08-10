@@ -6,6 +6,7 @@ import { factories } from "@strapi/strapi";
 import { normalizeIdentifier } from "../../../utils/normalizeIdentifier";
 import crypto from "crypto";
 import { Context } from "koa";
+import { createNotification } from "../../../utils/notification";
 
 const generateCustomerId = async () => {
   let customerId;
@@ -131,6 +132,9 @@ export default factories.createCoreController(
           publishedAt: new Date(),
         };
 
+        // ==========================================
+        // Create User Profile
+        // ==========================================
         const profile = await strapi.entityService.create(
           "api::user-profile.user-profile",
           {
@@ -141,6 +145,16 @@ export default factories.createCoreController(
             },
           },
         );
+
+        // ==========================================
+        // Create Notification
+        // ==========================================
+        await createNotification({
+          strapi,
+          title: "New User Added",
+          description: `A new user ${profile.fullName} has been added successfully.`,
+          type: "user",
+        });
 
         return ctx.send({
           message: "Profile created successfully.",
@@ -178,10 +192,10 @@ export default factories.createCoreController(
         const whereClause = isAdmin
           ? {}
           : {
-              users_permissions_user: {
-                id: user.id,
-              },
-            };
+            users_permissions_user: {
+              id: user.id,
+            },
+          };
 
         const profiles = await strapi.db
           .query("api::user-profile.user-profile")

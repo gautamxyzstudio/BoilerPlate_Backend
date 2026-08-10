@@ -6,6 +6,7 @@ import { factories } from "@strapi/strapi";
 import crypto from "crypto";
 import axios from "axios";
 import { sendOrderConfirmationEmail } from "../../../utils/sendOrderConfirmationEmail";
+import { createNotification } from "../../../utils/notification";
 
 export default factories.createCoreController(
     "api::order.order",
@@ -326,7 +327,7 @@ export default factories.createCoreController(
                             order: createdOrder.documentId,
                             orderStatus: "pending",
                             updatedByType: "system",
-                
+
                         },
                         transaction: trx,
                     });
@@ -401,6 +402,17 @@ export default factories.createCoreController(
 
                     await strapi.documents("api::cart.cart").delete({
                         documentId: (cart as any).documentId,
+                    });
+
+                    // ==========================================
+                    // Create Notification
+                    // ==========================================
+
+                    await createNotification({
+                        strapi,
+                        title: "New Order Received",
+                        description: `New order ${orderNo} has been received.`,
+                        type: "order",
                     });
 
                     return ctx.send({

@@ -604,7 +604,7 @@ export interface ApiDriverDetailDriverDetail
     singularName: 'driver-detail';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -627,10 +627,6 @@ export interface ApiDriverDetailDriverDetail
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    users_permissions_user: Schema.Attribute.Relation<
-      'oneToOne',
-      'plugin::users-permissions.user'
-    >;
   };
 }
 
@@ -643,7 +639,7 @@ export interface ApiDriverDocumentDriverDocument
     singularName: 'driver-document';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -664,6 +660,37 @@ export interface ApiDriverDocumentDriverDocument
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiNotificationNotification
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'notifications';
+  info: {
+    displayName: 'Notifications';
+    pluralName: 'notifications';
+    singularName: 'notification';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::notification.notification'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    title: Schema.Attribute.String;
+    type: Schema.Attribute.Enumeration<['user', 'order']>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1685,10 +1712,6 @@ export interface PluginUsersPermissionsUser
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    driver_detail: Schema.Attribute.Relation<
-      'oneToOne',
-      'api::driver-detail.driver-detail'
-    >;
     email: Schema.Attribute.Email &
       Schema.Attribute.Unique &
       Schema.Attribute.SetMinMaxLength<{
@@ -1748,6 +1771,7 @@ declare module '@strapi/strapi' {
       'api::cart.cart': ApiCartCart;
       'api::driver-detail.driver-detail': ApiDriverDetailDriverDetail;
       'api::driver-document.driver-document': ApiDriverDocumentDriverDocument;
+      'api::notification.notification': ApiNotificationNotification;
       'api::order-item.order-item': ApiOrderItemOrderItem;
       'api::order-status-history.order-status-history': ApiOrderStatusHistoryOrderStatusHistory;
       'api::order.order': ApiOrderOrder;

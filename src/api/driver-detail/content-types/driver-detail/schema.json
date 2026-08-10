@@ -7,7 +7,7 @@
     "displayName": "Driver Detail"
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
@@ -19,12 +19,6 @@
     },
     "phoneNumber": {
       "type": "string"
-    },
-    "users_permissions_user": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "driver_detail"
     },
     "driver_documents": {
       "type": "relation",
