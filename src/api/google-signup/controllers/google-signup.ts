@@ -85,7 +85,6 @@ export default {
       /* ================= RESPONSE ================= */
 
       return ctx.send({
-        success: true,
         jwt,
         user,
       });

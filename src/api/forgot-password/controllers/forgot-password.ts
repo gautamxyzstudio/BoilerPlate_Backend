@@ -142,7 +142,6 @@ export default {
             }
 
             return ctx.send({
-                success: true,
                 message: "OTP sent successfully.",
                 resetToken,
             });
@@ -263,7 +262,6 @@ export default {
             );
 
             return ctx.send({
-                success: true,
                 message: "OTP verified successfully.",
                 resetToken,
             });
@@ -406,7 +404,6 @@ export default {
             );
 
             return ctx.send({
-                success: true,
                 message: "Password reset successfully.",
             });
         } catch (error) {
@@ -519,7 +516,6 @@ export default {
             }
 
             return ctx.send({
-                success: true,
                 message: "OTP resent successfully.",
                 resetToken,
             });

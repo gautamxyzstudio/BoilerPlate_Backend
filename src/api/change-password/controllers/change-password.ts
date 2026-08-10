@@ -50,7 +50,6 @@ export default factories.createCoreController(
           });
 
         return ctx.send({
-          success: true,
           message: "Password changed successfully.",
         });
       } catch (error) {

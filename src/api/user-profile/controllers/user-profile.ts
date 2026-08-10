@@ -143,7 +143,6 @@ export default factories.createCoreController(
         );
 
         return ctx.send({
-          success: true,
           message: "Profile created successfully.",
           data: profile,
         });
@@ -199,7 +198,6 @@ export default factories.createCoreController(
           });
 
         return ctx.send({
-          success: true,
           data: profiles,
         });
       } catch (error) {
@@ -322,7 +320,6 @@ export default factories.createCoreController(
         );
 
         return ctx.send({
-          success: true,
           message: "Profile updated successfully.",
           data: updatedProfile,
         });

@@ -137,7 +137,6 @@ export default factories.createCoreController(
         }
 
         return ctx.send({
-          success: true,
           message: "OTP sent successfully.",
           signupToken,
         });
@@ -301,7 +300,6 @@ export default factories.createCoreController(
 
         // Return response
         return ctx.send({
-          success: true,
           jwt,
           user,
         });
@@ -394,7 +392,6 @@ export default factories.createCoreController(
         }
 
         return ctx.send({
-          success: true,
           message: "OTP resent successfully.",
           signupToken: pendingSignup.signupToken,
         });

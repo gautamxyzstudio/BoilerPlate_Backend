@@ -118,6 +118,7 @@ export default factories.createCoreService(
                 "pickup_assigned",
                 "picked_up",
                 "processing",
+                "ready_for_delivery",
                 "out_for_delivery",
                 "delivered",
                 "cancelled",
@@ -181,11 +182,8 @@ export default factories.createCoreService(
             // Prevent Backward Status
             // ===============================================
 
-            const currentIndex = latestHistory
-                ? statusFlow.indexOf(
-                    latestHistory.statusUpdatedTo
-                )
-                : -1;
+            const currentIndex =
+                statusFlow.indexOf(order.orderStatus);
 
             const nextIndex =
                 statusFlow.indexOf(orderStatus);
@@ -291,18 +289,14 @@ export default factories.createCoreService(
             // Response Data
             // ===============================================
 
-            const updatedAt =
-                new Date().toISOString();
+             const updatedAt = new Date().toISOString();
 
             return {
-                orderDocumentId:
-                    order.documentId,
+                orderDocumentId: order.documentId,
 
-                orderNo:
-                    order.orderNo,
+                orderNo: order.orderNo,
 
-                statusUpdatedTo:
-                    orderStatus,
+                statusUpdatedTo: orderStatus,
 
                 status_updated_by:
                     loggedInUser.documentId,
