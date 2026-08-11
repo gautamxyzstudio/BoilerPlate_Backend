@@ -113,6 +113,33 @@ export const initSocket = (
             );
 
             // ===============================================
+            // Normalize User Role
+            // ===============================================
+
+            const roleName = (user.role?.name || "")
+                .replace(/\s+/g, "")
+                .toLowerCase();
+
+            console.log(
+                `Normalized socket user role: ${roleName}`
+            );
+
+            // ===============================================
+            // Join Admin Notification Room
+            // ===============================================
+
+            if (
+                roleName === "admin" ||
+                roleName === "superadmin"
+            ) {
+                socket.join("admin-notifications");
+
+                console.log(
+                    `Socket ${socket.id} joined admin-notifications`
+                );
+            }
+
+            // ===============================================
             // Authentication Successful
             // ===============================================
 

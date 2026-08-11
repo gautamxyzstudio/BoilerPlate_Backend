@@ -23,6 +23,12 @@
         "user",
         "order"
       ]
+    },
+    "notification_readers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::notification-reader.notification-reader",
+      "mappedBy": "notification"
     }
   }
 }

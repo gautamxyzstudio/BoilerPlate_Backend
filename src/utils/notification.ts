@@ -1,3 +1,5 @@
+import { getIO } from "../socket";
+
 export const createNotification = async ({
   strapi,
   title,
@@ -9,7 +11,11 @@ export const createNotification = async ({
   description: string;
   type: "user" | "order";
 }) => {
-  return await strapi.entityService.create(
+  // ===============================================
+  // Create Notification In Database
+  // ===============================================
+
+  const notification = await strapi.entityService.create(
     "api::notification.notification",
     {
       data: {
@@ -20,4 +26,24 @@ export const createNotification = async ({
       },
     },
   );
+
+  // ===============================================
+  // Send Real-time Notification
+  // ===============================================
+
+  try {
+    const io = getIO();
+
+    io.to("admin-notifications").emit(
+      "new-notification",
+      notification,
+    );
+  } catch (error) {
+    strapi.log.error(
+      "Socket notification error:",
+      error,
+    );
+  }
+
+  return notification;
 };

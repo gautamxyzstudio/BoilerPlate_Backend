@@ -666,6 +666,44 @@ export interface ApiDriverDocumentDriverDocument
   };
 }
 
+export interface ApiNotificationReaderNotificationReader
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'notification_readers';
+  info: {
+    displayName: 'Notification Readers';
+    pluralName: 'notification-readers';
+    singularName: 'notification-reader';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    isRead: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::notification-reader.notification-reader'
+    > &
+      Schema.Attribute.Private;
+    notification: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::notification.notification'
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    readAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    users_permissions_user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiNotificationNotification
   extends Struct.CollectionTypeSchema {
   collectionName: 'notifications';
@@ -688,6 +726,10 @@ export interface ApiNotificationNotification
       'api::notification.notification'
     > &
       Schema.Attribute.Private;
+    notification_readers: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::notification-reader.notification-reader'
+    >;
     publishedAt: Schema.Attribute.DateTime;
     title: Schema.Attribute.String;
     type: Schema.Attribute.Enumeration<['user', 'order']>;
@@ -1723,6 +1765,10 @@ export interface PluginUsersPermissionsUser
       'plugin::users-permissions.user'
     > &
       Schema.Attribute.Private;
+    notification_readers: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::notification-reader.notification-reader'
+    >;
     order_status_histories: Schema.Attribute.Relation<
       'oneToMany',
       'api::order-status-history.order-status-history'
@@ -1771,6 +1817,7 @@ declare module '@strapi/strapi' {
       'api::cart.cart': ApiCartCart;
       'api::driver-detail.driver-detail': ApiDriverDetailDriverDetail;
       'api::driver-document.driver-document': ApiDriverDocumentDriverDocument;
+      'api::notification-reader.notification-reader': ApiNotificationReaderNotificationReader;
       'api::notification.notification': ApiNotificationNotification;
       'api::order-item.order-item': ApiOrderItemOrderItem;
       'api::order-status-history.order-status-history': ApiOrderStatusHistoryOrderStatusHistory;

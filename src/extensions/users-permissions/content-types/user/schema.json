@@ -80,6 +80,12 @@
       "relation": "oneToMany",
       "target": "api::order-status-history.order-status-history",
       "mappedBy": "status_updated_by"
+    },
+    "notification_readers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::notification-reader.notification-reader",
+      "mappedBy": "users_permissions_user"
     }
   }
 }
