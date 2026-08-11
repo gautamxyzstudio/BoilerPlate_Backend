@@ -211,8 +211,52 @@ export default factories.createCoreController(
             },
           });
 
+        const profilesWithStats = await Promise.all(
+          profiles.map(async (profile) => {
+            // Get orders of this user
+            const orders = await strapi.db
+              .query("api::order.order")
+              .findMany({
+                where: {
+                  user_profile: {
+                    id: profile.id,
+                  },
+                },
+                select: ["id"],
+              });
+
+            const totalOrders = orders.length;
+
+            let totalSpend = 0;
+
+            for (const order of orders) {
+              const payments = await strapi.db
+                .query("api::payment-collection.payment-collection")
+                .findMany({
+                  where: {
+                    order: {
+                      id: order.id,
+                    },
+                    payment_status: "paid",
+                  },
+                  select: ["amount"],
+                });
+
+              for (const payment of payments) {
+                totalSpend += Number(payment.amount || 0);
+              }
+            }
+
+            return {
+              ...profile,
+              totalOrders,
+              totalSpend,
+            };
+          })
+        );
+
         return ctx.send({
-          data: profiles,
+          data: profilesWithStats,
         });
       } catch (error) {
         strapi.log.error("Find User Profiles Error:", error);
