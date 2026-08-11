@@ -47,12 +47,12 @@
     "orderStatus": {
       "type": "enumeration",
       "default": "pending",
-     "enum": [
+      "enum": [
         "pending",
         "pickup_assigned",
         "picked_up",
         "processing",
-        "ready_for_delivery",
+        "delivery_assigned",
         "out_for_delivery",
         "delivered",
         "professional_assigned",
@@ -138,6 +138,18 @@
       "relation": "oneToMany",
       "target": "api::order-status-history.order-status-history",
       "mappedBy": "order"
+    },
+    "delivery_driver": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::driver-detail.driver-detail",
+      "inversedBy": "order_deliver"
+    },
+    "pickup_driver": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::driver-detail.driver-detail",
+      "inversedBy": "order_pickup"
     }
   }
 }

@@ -25,6 +25,18 @@
       "relation": "oneToMany",
       "target": "api::driver-document.driver-document",
       "mappedBy": "driver_detail"
+    },
+    "order_deliver": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order.order",
+      "mappedBy": "delivery_driver"
+    },
+    "order_pickup": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order.order",
+      "mappedBy": "pickup_driver"
     }
   }
 }

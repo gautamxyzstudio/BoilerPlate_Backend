@@ -7,14 +7,14 @@ export default {
             const statuses = [
                 "pending",
                 "processing",
-                "ready_for_delivery",
+                "delivery_assigned",
                 "out_for_delivery",
             ] as const;
 
             const stats: Record<(typeof statuses)[number], number> = {
                 pending: 0,
                 processing: 0,
-                ready_for_delivery: 0,
+                delivery_assigned: 0,
                 out_for_delivery: 0,
             };
 
@@ -35,7 +35,7 @@ export default {
                 {
                     pending: stats.pending,
                     processing: stats.processing,
-                    ready_for_delivery: stats.ready_for_delivery,
+                    delivery_assigned: stats.delivery_assigned,
                     out_for_delivery: stats.out_for_delivery,
                 },
             );

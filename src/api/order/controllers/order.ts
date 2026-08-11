@@ -437,6 +437,130 @@ export default factories.createCoreController(
             }
         },
 
+        // async find(ctx) {
+        //     try {
+        //         const user = ctx.state.user;
+
+        //         if (!user) {
+        //             return ctx.unauthorized("You must be logged in.");
+        //         }
+
+        //         // ===============================================
+        //         // Get Logged-in User with Role
+        //         // ===============================================
+
+        //         const loggedInUser = await strapi
+        //             .documents("plugin::users-permissions.user")
+        //             .findOne({
+        //                 documentId: user.documentId,
+        //                 populate: {
+        //                     role: true,
+        //                 },
+        //             });
+
+        //         const roleName = loggedInUser?.role?.name;
+
+        //         let filters: any = {};
+
+        //         // ===============================================
+        //         // Customer -> Only Own Orders
+        //         // ===============================================
+
+        //         if (roleName === "Customer") {
+        //             const userProfile = await strapi.db
+        //                 .query("api::user-profile.user-profile")
+        //                 .findOne({
+        //                     where: {
+        //                         users_permissions_user: user.id,
+        //                     },
+        //                 });
+
+        //             if (!userProfile) {
+        //                 return ctx.badRequest("User profile not found.");
+        //             }
+
+        //             filters = {
+        //                 user_profile: {
+        //                     documentId: {
+        //                         $eq: userProfile.documentId,
+        //                     },
+        //                 },
+        //             };
+
+        //             const { orderType = "all" } = ctx.query;
+
+        //             if (orderType === "active") {
+        //                 filters.orderStatus = {
+        //                     $ne: "delivered",
+        //                 };
+        //             } else if (orderType === "delivered") {
+        //                 filters.orderStatus = {
+        //                     $eq: "delivered",
+        //                 };
+        //             } else if (orderType !== "all") {
+        //                 return ctx.badRequest(
+        //                     "Invalid orderType. Use all, active, or delivered."
+        //                 );
+        //             }
+        //         }
+        //         // ===============================================
+        //         // Admin / SuperAdmin -> All Orders
+        //         // ===============================================
+
+        //         else if (
+        //             roleName !== "Admin" &&
+        //             roleName !== "SuperAdmin"
+        //         ) {
+        //             return ctx.forbidden("You are not allowed to access orders.");
+        //         }
+
+        //         // ===============================================
+        //         // Fetch Orders
+        //         // ===============================================
+
+        //         const orders = await strapi.documents("api::order.order").findMany({
+        //             filters,
+        //             sort: ["createdAt:desc"],
+        //             populate: {
+        //                 pickup_address: true,
+        //                 delivery_address: true,
+        //                 user_profile: {
+        //                     populate: {
+        //                         users_permissions_user: true,
+        //                     },
+        //                 },
+        //                 order_items: {
+        //                     populate: {
+        //                         service: {
+        //                             populate: {
+        //                                 image: true,
+        //                                 service_category: true,
+        //                             },
+        //                         },
+        //                         service_varient: {
+        //                             populate: {
+        //                                 image: true,
+        //                             },
+        //                         },
+        //                         service_pricing: true,
+        //                     },
+        //                 },
+        //             },
+        //         });
+
+        //         return ctx.send({
+        //             message: "Orders fetched successfully.",
+        //             data: orders,
+        //         });
+        //     } catch (error: any) {
+        //         strapi.log.error("Find Orders Error:", error);
+
+        //         return ctx.badRequest(
+        //             error?.message || "Unable to fetch orders."
+        //         );
+        //     }
+        // },
+
         async find(ctx) {
             try {
                 const user = ctx.state.user;
@@ -476,7 +600,9 @@ export default factories.createCoreController(
                         });
 
                     if (!userProfile) {
-                        return ctx.badRequest("User profile not found.");
+                        return ctx.badRequest(
+                            "User profile not found."
+                        );
                     }
 
                     filters = {
@@ -503,6 +629,7 @@ export default factories.createCoreController(
                         );
                     }
                 }
+
                 // ===============================================
                 // Admin / SuperAdmin -> All Orders
                 // ===============================================
@@ -511,52 +638,327 @@ export default factories.createCoreController(
                     roleName !== "Admin" &&
                     roleName !== "SuperAdmin"
                 ) {
-                    return ctx.forbidden("You are not allowed to access orders.");
+                    return ctx.forbidden(
+                        "You are not allowed to access orders."
+                    );
                 }
+
 
                 // ===============================================
                 // Fetch Orders
                 // ===============================================
 
-                const orders = await strapi.documents("api::order.order").findMany({
-                    filters,
-                    sort: ["createdAt:desc"],
-                    populate: {
-                        pickup_address: true,
-                        delivery_address: true,
-                        user_profile: {
-                            populate: {
-                                users_permissions_user: true,
-                            },
-                        },
-                        order_items: {
-                            populate: {
-                                service: {
-                                    populate: {
-                                        image: true,
-                                        service_category: true,
-                                    },
-                                },
-                                service_varient: {
-                                    populate: {
-                                        image: true,
-                                    },
-                                },
-                                service_pricing: true,
-                            },
-                        },
-                    },
-                });
+                const orders = await strapi
+                    .documents("api::order.order")
+                    .findMany({
+                        filters,
+                        sort: ["createdAt:desc"],
 
-                return ctx.send({
-                    message: "Orders fetched successfully.",
-                    data: orders,
-                });
+                        populate: {
+                            pickup_address: true,
+                            delivery_address: true,
+                            payment_collections: true,
+                            user_profile: true,
+
+                            delivery_driver: true,
+                            pickup_driver: true,
+
+                            order_items: {
+                                populate: {
+                                    service: true,
+                                    service_varient: true,
+                                    service_pricing: true,
+                                },
+                            },
+                        },
+                    });
+
+
+                // ===============================================
+                // CUSTOMER RESPONSE
+                // ===============================================
+
+                if (roleName === "Customer") {
+
+                    const customerOrders = orders.map(
+                        (order: any) => ({
+                            documentId:
+                                order.documentId,
+
+                            orderNo: order.orderNo,
+
+                            createdAt:
+                                order.createdAt,
+
+                            grandTotal:
+                                order.grandTotal,
+
+                            orderStatus:
+                                order.orderStatus,
+
+                            orderItems:
+                                (order.order_items || []).map(
+                                    (item: any) => ({
+                                        quantity:
+                                            item.quantity,
+
+                                        serviceName:
+                                            item.service?.name ||
+                                            null,
+
+                                        serviceVarientName:
+                                            item.service_varient?.name ||
+                                            null,
+                                    })
+                                ),
+                        })
+                    );
+
+                    return ctx.send({
+                        message:
+                            "Orders fetched successfully.",
+
+                        data: customerOrders,
+                    });
+                }
+
+
+                // ===============================================
+                // ADMIN / SUPERADMIN RESPONSE
+                // ===============================================
+
+                if (
+                    roleName === "Admin" ||
+                    roleName === "SuperAdmin"
+                ) {
+
+                    // ===========================================
+                    // Customer Statistics
+                    // ===========================================
+
+                    const customerStats: Record<
+                        string,
+                        {
+                            totalOrders: number;
+                            totalSpend: number;
+                        }
+                    > = {};
+
+                    for (const order of orders as any[]) {
+
+                        const userProfileId =
+                            order.user_profile?.documentId;
+
+                        if (!userProfileId) {
+                            continue;
+                        }
+
+                        if (!customerStats[userProfileId]) {
+                            customerStats[userProfileId] = {
+                                totalOrders: 0,
+                                totalSpend: 0,
+                            };
+                        }
+
+                        customerStats[userProfileId].totalOrders += 1;
+
+                        const paidAmount = (
+                            order.payment_collections || []
+                        )
+                            .filter(
+                                (payment: any) =>
+                                    payment.payment_status === "paid"
+                            )
+                            .reduce(
+                                (total: number, payment: any) =>
+                                    total + Number(payment.amount || 0),
+                                0
+                            );
+
+                        customerStats[userProfileId].totalSpend += paidAmount;
+                    }
+
+
+                    // ===========================================
+                    // Admin Orders
+                    // ===========================================
+
+                    const adminOrders = orders.map(
+                        (order: any) => {
+
+                            const userProfileId =
+                                order.user_profile?.documentId;
+
+                            const stats = userProfileId
+                                ? customerStats[userProfileId]
+                                : {
+                                    totalOrders: 0,
+                                    totalSpend: 0,
+                                };
+
+                            return {
+
+                                orderNo:
+                                    order.orderNo,
+
+                                orderStatus:
+                                    order.orderStatus,
+
+                                createdAt:
+                                    order.createdAt,
+
+                                paymentStatus:
+                                    order.paymentStatus,
+
+                                specialInstruction:
+                                    order.specialInstruction,
+
+                                pickupDate:
+                                    order.pickupDate,
+
+                                pickupTime:
+                                    order.pickupTime,
+
+                                deliveryDate:
+                                    order.deliveryDate,
+
+                                deliveryTime:
+                                    order.deliveryTime,
+
+                                grandTotal:
+                                    order.grandTotal,
+
+
+                                // -------------------------------
+                                // Pickup Address
+                                // -------------------------------
+
+                                pickupAddress: {
+                                    fullAddress:
+                                        order.pickup_address
+                                            ?.fullAddress ||
+                                        null,
+                                },
+
+
+                                // -------------------------------
+                                // Delivery Address
+                                // -------------------------------
+
+                                deliveryAddress: {
+                                    fullAddress:
+                                        order.delivery_address
+                                            ?.fullAddress ||
+                                        null,
+                                },
+
+
+                                // -------------------------------
+                                // User
+                                // -------------------------------
+
+                                user: {
+
+                                    fullName:
+                                        order.user_profile
+                                            ?.fullName ||
+                                        null,
+
+                                    phone:
+                                        order.user_profile
+                                            ?.phoneNumber ||
+                                        null,
+
+                                    totalOrders:
+                                        stats.totalOrders,
+
+                                    totalSpend:
+                                        stats.totalSpend,
+                                },
+
+
+                                // -------------------------------
+                                // Order Items
+                                // -------------------------------
+
+                                orderItems:
+                                    (
+                                        order.order_items ||
+                                        []
+                                    ).map(
+                                        (item: any) => ({
+
+                                            quantity:
+                                                item.quantity,
+
+                                            serviceName:
+                                                item.service
+                                                    ?.name ||
+                                                null,
+
+                                            serviceVarientName:
+                                                item.service_varient
+                                                    ?.name ||
+                                                null,
+
+                                            price:
+                                                item.service_pricing
+                                                    ?.price ??
+                                                null,
+
+                                            offerPrice:
+                                                item.service_pricing
+                                                    ?.offerPrice ??
+                                                null,
+                                        })
+                                    ),
+
+
+                                // -------------------------------
+                                // Delivery Person
+                                // -------------------------------
+
+                                deliveryPerson: {
+                                    fullName:
+                                        order.delivery_driver
+                                            ?.fullName ||
+                                        null,
+                                },
+
+
+                                // -------------------------------
+                                // Pickup Person
+                                // -------------------------------
+
+                                pickupPerson: {
+                                    fullName:
+                                        order.pickup_driver
+                                            ?.fullName ||
+                                        null,
+                                },
+                            };
+                        }
+                    );
+
+
+                    return ctx.send({
+                        message:
+                            "Orders fetched successfully.",
+
+                        data: adminOrders,
+                    });
+                }
+
             } catch (error: any) {
-                strapi.log.error("Find Orders Error:", error);
+
+                strapi.log.error(
+                    "Find Orders Error:",
+                    error
+                );
 
                 return ctx.badRequest(
-                    error?.message || "Unable to fetch orders."
+                    error?.message ||
+                    "Unable to fetch orders."
                 );
             }
         },

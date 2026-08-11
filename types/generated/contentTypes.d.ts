@@ -622,6 +622,8 @@ export interface ApiDriverDetailDriverDetail
       'api::driver-detail.driver-detail'
     > &
       Schema.Attribute.Private;
+    order_deliver: Schema.Attribute.Relation<'oneToMany', 'api::order.order'>;
+    order_pickup: Schema.Attribute.Relation<'oneToMany', 'api::order.order'>;
     phoneNumber: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
@@ -825,7 +827,7 @@ export interface ApiOrderStatusHistoryOrderStatusHistory
         'pickup_assigned',
         'picked_up',
         'processing',
-        'ready_for_delivery',
+        'delivery_assigned',
         'out_for_delivery',
         'delivered',
         'professional_assigned',
@@ -867,6 +869,10 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       'manyToOne',
       'api::address.address'
     >;
+    delivery_driver: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::driver-detail.driver-detail'
+    >;
     deliveryCharge: Schema.Attribute.Decimal;
     deliveryDate: Schema.Attribute.Date;
     deliveryTime: Schema.Attribute.Time;
@@ -890,7 +896,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
         'pickup_assigned',
         'picked_up',
         'processing',
-        'ready_for_delivery',
+        'delivery_assigned',
         'out_for_delivery',
         'delivered',
         'professional_assigned',
@@ -916,6 +922,10 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     pickup_address: Schema.Attribute.Relation<
       'manyToOne',
       'api::address.address'
+    >;
+    pickup_driver: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::driver-detail.driver-detail'
     >;
     pickupDate: Schema.Attribute.Date;
     pickupTime: Schema.Attribute.Time;

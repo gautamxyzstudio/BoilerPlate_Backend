@@ -118,7 +118,7 @@ export default factories.createCoreService(
                 "pickup_assigned",
                 "picked_up",
                 "processing",
-                "ready_for_delivery",
+                "delivery_assigned",
                 "out_for_delivery",
                 "delivered",
                 "cancelled",
