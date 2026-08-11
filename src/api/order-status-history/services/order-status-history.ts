@@ -32,7 +32,6 @@ export default factories.createCoreService(
                 "Admin",
                 "superAdmin",
                 "Staff",
-                "Driver",
             ];
 
             if (!allowedRoles.includes(userRole)) {
@@ -179,7 +178,7 @@ export default factories.createCoreService(
             }
 
             // ===============================================
-            // Prevent Backward Status
+            // Status Transition Validation
             // ===============================================
 
             const currentIndex =
@@ -188,15 +187,38 @@ export default factories.createCoreService(
             const nextIndex =
                 statusFlow.indexOf(orderStatus);
 
+            // ===============================================
+            // Invalid Current / Next Status
+            // ===============================================
+
             if (
-                currentIndex !== -1 &&
-                nextIndex < currentIndex
+                currentIndex === -1 ||
+                nextIndex === -1
             ) {
+                throw new Error(
+                    "Invalid order status transition."
+                );
+            }
+
+            // ===============================================
+            // Prevent Backward Status
+            // ===============================================
+
+            if (nextIndex < currentIndex) {
                 throw new Error(
                     "Cannot move order back to a previous status."
                 );
             }
 
+            // ===============================================
+            // Prevent Skipping Status
+            // ===============================================
+
+            if (nextIndex > currentIndex + 1) {
+                throw new Error(
+                    `Cannot skip order status. Next allowed status is '${statusFlow[currentIndex + 1]}'.`
+                );
+            }
             // ===============================================
             // Create Status History
             // ===============================================
@@ -289,7 +311,7 @@ export default factories.createCoreService(
             // Response Data
             // ===============================================
 
-             const updatedAt = new Date().toISOString();
+            const updatedAt = new Date().toISOString();
 
             return {
                 orderDocumentId: order.documentId,

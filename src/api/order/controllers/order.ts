@@ -798,6 +798,8 @@ export default factories.createCoreController(
 
                             return {
 
+                                documentId: order.documentId,
+
                                 orderNo:
                                     order.orderNo,
 
@@ -863,6 +865,11 @@ export default factories.createCoreController(
                                         order.user_profile
                                             ?.fullName ||
                                         null,
+                                        
+                                    email:
+                                        order.user_profile
+                                            ?.email ||
+                                        null,
 
                                     phone:
                                         order.user_profile
@@ -919,10 +926,14 @@ export default factories.createCoreController(
                                 // -------------------------------
 
                                 deliveryPerson: {
+                                    documentId:
+                                        order.delivery_driver?.documentId || null,
                                     fullName:
                                         order.delivery_driver
                                             ?.fullName ||
                                         null,
+                                    phoneNumber:
+                                        order.delivery_driver?.phoneNumber || null
                                 },
 
 
@@ -931,10 +942,14 @@ export default factories.createCoreController(
                                 // -------------------------------
 
                                 pickupPerson: {
+                                    documentId:
+                                        order.pickup_driver?.documentId || null,
                                     fullName:
                                         order.pickup_driver
                                             ?.fullName ||
                                         null,
+                                    phoneNumber:
+                                        order.ppickup_driver?.phoneNumber || null
                                 },
                             };
                         }

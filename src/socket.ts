@@ -202,11 +202,11 @@ export const initSocket = (
         );
 
         // ===============================================
-        // Update Order Status
+        // Update Order
         // ===============================================
 
         socket.on(
-            "update-order-status",
+            "update-order",
             async (data) => {
 
                 try {
@@ -214,6 +214,8 @@ export const initSocket = (
                     const {
                         orderDocumentId,
                         orderStatus,
+                        pickupDriverDocumentId,
+                        deliveryDriverDocumentId,
                     } = data || {};
 
                     // ===========================================
@@ -221,9 +223,8 @@ export const initSocket = (
                     // ===========================================
 
                     if (!orderDocumentId) {
-
                         socket.emit(
-                            "order-status-error",
+                            "order-update-error",
                             {
                                 message:
                                     "Order document ID is required.",
@@ -234,33 +235,15 @@ export const initSocket = (
                     }
 
                     // ===========================================
-                    // Validate Order Status
-                    // ===========================================
-
-                    if (!orderStatus) {
-
-                        socket.emit(
-                            "order-status-error",
-                            {
-                                message:
-                                    "Order status is required.",
-                            }
-                        );
-
-                        return;
-                    }
-
-                    // ===========================================
-                    // Get Authenticated User
+                    // Logged-In User
                     // ===========================================
 
                     const loggedInUser =
                         socket.data.user;
 
                     if (!loggedInUser) {
-
                         socket.emit(
-                            "order-status-error",
+                            "order-update-error",
                             {
                                 message:
                                     "You are not authenticated.",
@@ -271,52 +254,436 @@ export const initSocket = (
                     }
 
                     // ===========================================
-                    // Update Order Status
+                    // User Role
                     // ===========================================
 
-                    const result = await strapi
-                        .service(
-                            "api::order-status-history.order-status-history"
-                        )
-                        .updateOrderStatus(
-                            orderDocumentId,
-                            orderStatus,
-                            loggedInUser
+                    const userRole =
+                        loggedInUser.role?.name;
+
+                    const allowedRoles = [
+                        "Admin",
+                        "superAdmin",
+                        "Staff",
+                    ];
+
+                    if (!allowedRoles.includes(userRole)) {
+                        socket.emit(
+                            "order-update-error",
+                            {
+                                message:
+                                    "You are not authorized to update orders.",
+                            }
                         );
 
+                        return;
+                    }
+
                     // ===========================================
-                    // Emit Status Update
+                    // Something Must Be Updated
+                    // ===========================================
+
+                    if (
+                        !orderStatus &&
+                        !pickupDriverDocumentId &&
+                        !deliveryDriverDocumentId
+                    ) {
+                        socket.emit(
+                            "order-update-error",
+                            {
+                                message:
+                                    "Please provide an order status or driver assignment.",
+                            }
+                        );
+
+                        return;
+                    }
+
+                    // ===========================================
+                    // Pickup + Delivery Cannot Be Updated Together
+                    // ===========================================
+
+                    if (
+                        pickupDriverDocumentId &&
+                        deliveryDriverDocumentId
+                    ) {
+                        socket.emit(
+                            "order-update-error",
+                            {
+                                message:
+                                    "Pickup and delivery drivers must be assigned separately.",
+                            }
+                        );
+
+                        return;
+                    }
+
+                    // ===========================================
+                    // Find Order
+                    // ===========================================
+
+                    const order =
+                        await strapi
+                            .documents("api::order.order")
+                            .findOne({
+                                documentId:
+                                    orderDocumentId,
+                            });
+
+                    if (!order) {
+                        socket.emit(
+                            "order-update-error",
+                            {
+                                message:
+                                    "Order not found.",
+                            }
+                        );
+
+                        return;
+                    }
+
+                    // ===========================================
+                    // Determine Status
+                    // ===========================================
+
+                    let statusToUpdate =
+                        orderStatus;
+
+                    // ===========================================
+                    // Pickup Driver Assignment
+                    // ===========================================
+
+                    if (pickupDriverDocumentId) {
+
+                        // ---------------------------------------
+                        // Only allowed during pickup stage
+                        // ---------------------------------------
+
+                        if (
+                            order.orderStatus !==
+                            "pending" &&
+                            order.orderStatus !==
+                            "pickup_assigned"
+                        ) {
+
+                            socket.emit(
+                                "order-update-error",
+                                {
+                                    message:
+                                        "Pickup driver can only be assigned when order status is pending or pickup_assigned.",
+                                }
+                            );
+
+                            return;
+                        }
+
+                        // ---------------------------------------
+                        // Validate Pickup Driver
+                        // ---------------------------------------
+
+                        const pickupDriver =
+                            await strapi
+                                .documents(
+                                    "api::driver-detail.driver-detail"
+                                )
+                                .findOne({
+                                    documentId:
+                                        pickupDriverDocumentId,
+                                });
+
+                        if (!pickupDriver) {
+
+                            socket.emit(
+                                "order-update-error",
+                                {
+                                    message:
+                                        "Pickup driver not found.",
+                                }
+                            );
+
+                            return;
+                        }
+
+                        // ---------------------------------------
+                        // If pending, assignment automatically
+                        // moves order to pickup_assigned
+                        // ---------------------------------------
+
+                        if (
+                            order.orderStatus ===
+                            "pending"
+                        ) {
+
+                            // Do not allow a different manual
+                            // status in the same request
+                            if (
+                                orderStatus &&
+                                orderStatus !==
+                                "pickup_assigned"
+                            ) {
+                                socket.emit(
+                                    "order-update-error",
+                                    {
+                                        message:
+                                            "When assigning a pickup driver from pending, the status can only be pickup_assigned.",
+                                    }
+                                );
+
+                                return;
+                            }
+
+                            statusToUpdate =
+                                "pickup_assigned";
+                        }
+
+                        // ---------------------------------------
+                        // If already pickup_assigned, driver
+                        // can be assigned without changing status
+                        // ---------------------------------------
+
+                        if (
+                            order.orderStatus ===
+                            "pickup_assigned"
+                        ) {
+
+                            if (
+                                orderStatus &&
+                                orderStatus !==
+                                "pickup_assigned"
+                            ) {
+                                // Let the normal status validation
+                                // handle the requested status.
+                                statusToUpdate =
+                                    orderStatus;
+                            } else {
+                                statusToUpdate =
+                                    undefined;
+                            }
+                        }
+                    }
+
+                    // ===========================================
+                    // Delivery Driver Assignment
+                    // ===========================================
+
+                    if (deliveryDriverDocumentId) {
+
+                        // ---------------------------------------
+                        // Only allowed during delivery stage
+                        // ---------------------------------------
+
+                        if (
+                            order.orderStatus !==
+                            "processing" &&
+                            order.orderStatus !==
+                            "delivery_assigned"
+                        ) {
+
+                            socket.emit(
+                                "order-update-error",
+                                {
+                                    message:
+                                        "Delivery driver can only be assigned when order status is processing or delivery_assigned.",
+                                }
+                            );
+
+                            return;
+                        }
+
+                        // ---------------------------------------
+                        // Validate Delivery Driver
+                        // ---------------------------------------
+
+                        const deliveryDriver =
+                            await strapi
+                                .documents(
+                                    "api::driver-detail.driver-detail"
+                                )
+                                .findOne({
+                                    documentId:
+                                        deliveryDriverDocumentId,
+                                });
+
+                        if (!deliveryDriver) {
+
+                            socket.emit(
+                                "order-update-error",
+                                {
+                                    message:
+                                        "Delivery driver not found.",
+                                }
+                            );
+
+                            return;
+                        }
+
+                        // ---------------------------------------
+                        // If processing, assignment automatically
+                        // moves order to delivery_assigned
+                        // ---------------------------------------
+
+                        if (
+                            order.orderStatus ===
+                            "processing"
+                        ) {
+
+                            if (
+                                orderStatus &&
+                                orderStatus !==
+                                "delivery_assigned"
+                            ) {
+                                socket.emit(
+                                    "order-update-error",
+                                    {
+                                        message:
+                                            "When assigning a delivery driver from processing, the status can only be delivery_assigned.",
+                                    }
+                                );
+
+                                return;
+                            }
+
+                            statusToUpdate =
+                                "delivery_assigned";
+                        }
+
+                        // ---------------------------------------
+                        // If already delivery_assigned, driver
+                        // can be assigned without changing status
+                        // ---------------------------------------
+
+                        if (
+                            order.orderStatus ===
+                            "delivery_assigned"
+                        ) {
+
+                            if (
+                                orderStatus &&
+                                orderStatus !==
+                                "delivery_assigned"
+                            ) {
+                                statusToUpdate =
+                                    orderStatus;
+                            } else {
+                                statusToUpdate =
+                                    undefined;
+                            }
+                        }
+                    }
+
+                    // ===========================================
+                    // Update Driver Assignment
+                    // ===========================================
+
+                    const driverUpdateData: any = {};
+
+                    if (pickupDriverDocumentId) {
+                        driverUpdateData.pickup_driver =
+                            pickupDriverDocumentId;
+                    }
+
+                    if (deliveryDriverDocumentId) {
+                        driverUpdateData.delivery_driver =
+                            deliveryDriverDocumentId;
+                    }
+
+                    if (
+                        Object.keys(driverUpdateData).length > 0
+                    ) {
+
+                        await strapi
+                            .documents("api::order.order")
+                            .update({
+                                documentId:
+                                    orderDocumentId,
+                                data:
+                                    driverUpdateData,
+                            });
+                    }
+
+                    // ===========================================
+                    // Update Status
+                    // ===========================================
+
+                    let statusResult = null;
+
+                    if (
+                        statusToUpdate &&
+                        statusToUpdate !==
+                        order.orderStatus
+                    ) {
+
+                        statusResult =
+                            await strapi
+                                .service(
+                                    "api::order-status-history.order-status-history"
+                                )
+                                .updateOrderStatus(
+                                    orderDocumentId,
+                                    statusToUpdate,
+                                    loggedInUser
+                                );
+                    }
+
+                    // ===========================================
+                    // Get Updated Order
+                    // ===========================================
+
+                    const updatedOrder =
+                        await strapi
+                            .documents("api::order.order")
+                            .findOne({
+                                documentId:
+                                    orderDocumentId,
+                                populate: {
+                                    pickup_driver: true,
+                                    delivery_driver: true,
+                                    pickup_address: true,
+                                    delivery_address: true,
+                                    order_items: true,
+                                },
+                            });
+
+                    // ===========================================
+                    // Emit Updated Order
                     // ===========================================
 
                     io.to(
                         `order-${orderDocumentId}`
                     ).emit(
-                        "order-status-updated",
-                        result
+                        "order-updated",
+                        {
+                            order: updatedOrder,
+                            status:
+                                statusResult,
+                        }
                     );
 
                     // ===========================================
-                    // Send Success To Requesting Socket
+                    // Success
                     // ===========================================
 
                     socket.emit(
-                        "order-status-success",
-                        result
+                        "order-update-success",
+                        {
+                            order: updatedOrder,
+                            status:
+                                statusResult,
+                        }
                     );
 
                 } catch (error: any) {
 
                     console.error(
-                        "Socket Order Status Error:",
+                        "Socket Order Update Error:",
                         error
                     );
 
                     socket.emit(
-                        "order-status-error",
+                        "order-update-error",
                         {
                             message:
                                 error?.message ||
-                                "Failed to update order status.",
+                                "Failed to update order.",
                         }
                     );
                 }
