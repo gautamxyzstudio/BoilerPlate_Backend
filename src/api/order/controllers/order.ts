@@ -460,7 +460,7 @@ export default factories.createCoreController(
 
                 const roleName = loggedInUser?.role?.name;
 
-                let filters = {};
+                let filters: any = {};
 
                 // ===============================================
                 // Customer -> Only Own Orders
@@ -486,6 +486,22 @@ export default factories.createCoreController(
                             },
                         },
                     };
+
+                    const { orderType = "all" } = ctx.query;
+
+                    if (orderType === "active") {
+                        filters.orderStatus = {
+                            $ne: "delivered",
+                        };
+                    } else if (orderType === "delivered") {
+                        filters.orderStatus = {
+                            $eq: "delivered",
+                        };
+                    } else if (orderType !== "all") {
+                        return ctx.badRequest(
+                            "Invalid orderType. Use all, active, or delivered."
+                        );
+                    }
                 }
                 // ===============================================
                 // Admin / SuperAdmin -> All Orders
