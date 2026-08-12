@@ -616,6 +616,7 @@ export interface ApiDriverDetailDriverDetail
     >;
     email: Schema.Attribute.Email;
     fullName: Schema.Attribute.String;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -629,6 +630,7 @@ export interface ApiDriverDetailDriverDetail
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    vehicleNumber: Schema.Attribute.String;
   };
 }
 

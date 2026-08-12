@@ -37,6 +37,13 @@
       "relation": "oneToMany",
       "target": "api::order.order",
       "mappedBy": "pickup_driver"
+    },
+    "vehicleNumber": {
+      "type": "string"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
     }
   }
 }
