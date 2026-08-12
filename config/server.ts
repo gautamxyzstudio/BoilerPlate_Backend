@@ -1,4 +1,5 @@
 import type { Core } from '@strapi/strapi';
+import cronTasks from '../src/cron/cron-tasks';
 
 const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Server => ({
   host: env('HOST', '0.0.0.0'),
@@ -8,6 +9,10 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Server =>
   },
   webhooks: {
     populateRelations: env.bool('WEBHOOKS_POPULATE_RELATIONS', false),
+  },
+  cron: {
+    enabled: true,
+    tasks: cronTasks,
   },
 });
 
