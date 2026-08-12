@@ -7,6 +7,7 @@ import { normalizeIdentifier } from "../../../utils/normalizeIdentifier";
 import crypto from "crypto";
 import { Context } from "koa";
 import { createNotification } from "../../../utils/notification";
+import { getIO } from "../../../socket";
 
 const generateCustomerId = async () => {
   let customerId;
@@ -144,6 +145,32 @@ export default factories.createCoreController(
               users_permissions_user: true,
             },
           },
+        );
+
+        // ==========================================
+        // Emit New User Profile
+        // ==========================================
+
+        const io = getIO();
+
+        console.log(
+          "EMITTING NEW USER PROFILE TO ADMIN-USERS:",
+          {
+            profileDocumentId: profile.documentId,
+            customerId: profile.customerId,
+            fullName: profile.fullName,
+          }
+        );
+
+        io.to("admin-users").emit(
+          "user-profile-created",
+          {
+            profile,
+          }
+        );
+
+        console.log(
+          "NEW USER PROFILE EVENT EMITTED"
         );
 
         // ==========================================

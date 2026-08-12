@@ -133,9 +133,17 @@ export const initSocket = (
                 roleName === "superadmin"
             ) {
                 socket.join("admin-notifications");
+                socket.join("admin-orders");
+                socket.join("admin-users");
 
                 console.log(
                     `Socket ${socket.id} joined admin-notifications`
+                );
+                console.log(
+                    `Socket ${socket.id} joined admin-orders`
+                );
+                console.log(
+                    `Socket ${socket.id} joined admin-users`
                 );
             }
 

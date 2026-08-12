@@ -7,6 +7,7 @@ import crypto from "crypto";
 import axios from "axios";
 import { sendOrderConfirmationEmail } from "../../../utils/sendOrderConfirmationEmail";
 import { createNotification } from "../../../utils/notification";
+import { getIO } from "../../../socket";
 
 export default factories.createCoreController(
     "api::order.order",
@@ -415,6 +416,16 @@ export default factories.createCoreController(
                         type: "order",
                     });
 
+                    // ==========================================
+                    // Emit New Order To Admin/Staff
+                    // ==========================================
+
+                    const io = getIO();
+
+                    io.to("admin-orders").emit("order-created", {
+                        order,
+                    });
+
                     return ctx.send({
                         message: "Order created successfully.",
                         data: order,
@@ -436,130 +447,6 @@ export default factories.createCoreController(
                 );
             }
         },
-
-        // async find(ctx) {
-        //     try {
-        //         const user = ctx.state.user;
-
-        //         if (!user) {
-        //             return ctx.unauthorized("You must be logged in.");
-        //         }
-
-        //         // ===============================================
-        //         // Get Logged-in User with Role
-        //         // ===============================================
-
-        //         const loggedInUser = await strapi
-        //             .documents("plugin::users-permissions.user")
-        //             .findOne({
-        //                 documentId: user.documentId,
-        //                 populate: {
-        //                     role: true,
-        //                 },
-        //             });
-
-        //         const roleName = loggedInUser?.role?.name;
-
-        //         let filters: any = {};
-
-        //         // ===============================================
-        //         // Customer -> Only Own Orders
-        //         // ===============================================
-
-        //         if (roleName === "Customer") {
-        //             const userProfile = await strapi.db
-        //                 .query("api::user-profile.user-profile")
-        //                 .findOne({
-        //                     where: {
-        //                         users_permissions_user: user.id,
-        //                     },
-        //                 });
-
-        //             if (!userProfile) {
-        //                 return ctx.badRequest("User profile not found.");
-        //             }
-
-        //             filters = {
-        //                 user_profile: {
-        //                     documentId: {
-        //                         $eq: userProfile.documentId,
-        //                     },
-        //                 },
-        //             };
-
-        //             const { orderType = "all" } = ctx.query;
-
-        //             if (orderType === "active") {
-        //                 filters.orderStatus = {
-        //                     $ne: "delivered",
-        //                 };
-        //             } else if (orderType === "delivered") {
-        //                 filters.orderStatus = {
-        //                     $eq: "delivered",
-        //                 };
-        //             } else if (orderType !== "all") {
-        //                 return ctx.badRequest(
-        //                     "Invalid orderType. Use all, active, or delivered."
-        //                 );
-        //             }
-        //         }
-        //         // ===============================================
-        //         // Admin / SuperAdmin -> All Orders
-        //         // ===============================================
-
-        //         else if (
-        //             roleName !== "Admin" &&
-        //             roleName !== "SuperAdmin"
-        //         ) {
-        //             return ctx.forbidden("You are not allowed to access orders.");
-        //         }
-
-        //         // ===============================================
-        //         // Fetch Orders
-        //         // ===============================================
-
-        //         const orders = await strapi.documents("api::order.order").findMany({
-        //             filters,
-        //             sort: ["createdAt:desc"],
-        //             populate: {
-        //                 pickup_address: true,
-        //                 delivery_address: true,
-        //                 user_profile: {
-        //                     populate: {
-        //                         users_permissions_user: true,
-        //                     },
-        //                 },
-        //                 order_items: {
-        //                     populate: {
-        //                         service: {
-        //                             populate: {
-        //                                 image: true,
-        //                                 service_category: true,
-        //                             },
-        //                         },
-        //                         service_varient: {
-        //                             populate: {
-        //                                 image: true,
-        //                             },
-        //                         },
-        //                         service_pricing: true,
-        //                     },
-        //                 },
-        //             },
-        //         });
-
-        //         return ctx.send({
-        //             message: "Orders fetched successfully.",
-        //             data: orders,
-        //         });
-        //     } catch (error: any) {
-        //         strapi.log.error("Find Orders Error:", error);
-
-        //         return ctx.badRequest(
-        //             error?.message || "Unable to fetch orders."
-        //         );
-        //     }
-        // },
 
         async find(ctx) {
             try {
@@ -715,9 +602,6 @@ export default factories.createCoreController(
                     );
 
                     return ctx.send({
-                        message:
-                            "Orders fetched successfully.",
-
                         data: customerOrders,
                     });
                 }
@@ -865,7 +749,7 @@ export default factories.createCoreController(
                                         order.user_profile
                                             ?.fullName ||
                                         null,
-                                        
+
                                     email:
                                         order.user_profile
                                             ?.email ||
@@ -957,9 +841,6 @@ export default factories.createCoreController(
 
 
                     return ctx.send({
-                        message:
-                            "Orders fetched successfully.",
-
                         data: adminOrders,
                     });
                 }
@@ -1080,7 +961,6 @@ export default factories.createCoreController(
                 }
 
                 return ctx.send({
-                    message: "Order fetched successfully.",
                     data: order,
                 });
             } catch (error: any) {
