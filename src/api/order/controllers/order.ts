@@ -326,7 +326,7 @@ export default factories.createCoreController(
                     await strapi.documents("api::order-status-history.order-status-history" as any).create({
                         data: {
                             order: createdOrder.documentId,
-                            orderStatus: "pending",
+                            statusUpdatedTo: "pending",
                             updatedByType: "system",
 
                         },
