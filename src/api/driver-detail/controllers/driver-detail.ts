@@ -30,10 +30,6 @@ export default factories.createCoreController(
                     return ctx.badRequest("Full name is required.");
                 }
 
-                if (!email) {
-                    return ctx.badRequest("Email is required.");
-                }
-
                 if (!phoneNumber) {
                     return ctx.badRequest("Phone number is required.");
                 }
@@ -42,18 +38,20 @@ export default factories.createCoreController(
                 // Check duplicate email
                 // ============================================
 
-                const existingEmail = await strapi.db
-                    .query("api::driver-detail.driver-detail")
-                    .findOne({
-                        where: {
-                            email,
-                        },
-                    });
+                if (email) {
+                    const existingEmail = await strapi.db
+                        .query("api::driver-detail.driver-detail")
+                        .findOne({
+                            where: {
+                                email,
+                            },
+                        });
 
-                if (existingEmail) {
-                    return ctx.badRequest(
-                        "A driver with this email already exists."
-                    );
+                    if (existingEmail) {
+                        return ctx.badRequest(
+                            "A driver with this email already exists."
+                        );
+                    }
                 }
 
                 // ============================================
@@ -161,7 +159,7 @@ export default factories.createCoreController(
         async update(ctx) {
             try {
                 const documentId = ctx.params.id;
-            
+
                 const {
                     fullName,
                     email,
@@ -498,8 +496,8 @@ export default factories.createCoreController(
 
         async findOne(ctx) {
             try {
-                const documentId  = ctx.params.id;
-                console.log(ctx.params.id,"id");
+                const documentId = ctx.params.id;
+                console.log(ctx.params.id, "id");
 
                 // ============================================
                 // Find Driver by documentId
@@ -541,7 +539,7 @@ export default factories.createCoreController(
 
                 const documents = driverDocuments.map((document) => ({
                     documentId: document.documentId,
-                    documentName:document.documentName,
+                    documentName: document.documentName,
                     documentImage: document.documentImage
                         ? {
                             url: document.documentImage.url,
