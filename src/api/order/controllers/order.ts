@@ -898,6 +898,8 @@ export default factories.createCoreController(
                         pickup_address: true,
                         delivery_address: true,
                         user_profile: true,
+                        delivery_driver: true,
+                        pickup_driver: true,
                         order_items: {
                             populate: {
                                 service: {
@@ -912,6 +914,7 @@ export default factories.createCoreController(
                                     },
                                 },
                                 service_pricing: true,
+
                             },
                         },
                     },
@@ -959,6 +962,86 @@ export default factories.createCoreController(
                         "You are not allowed to access this order."
                     );
                 }
+
+                // ===============================================
+                // Customer -> Return simplified order response
+                // ===============================================
+
+                if (roleName === "Customer") {
+                    const customerOrder = {
+                        id: order.id,
+                        documentId: order.documentId,
+                        orderNo: order.orderNo,
+                        pickupDate: order.pickupDate,
+                        pickupTime: order.pickupTime,
+                        deliveryDate: order.deliveryDate,
+                        deliveryTime: order.deliveryTime,
+                        paymentMethod: order.paymentMethod,
+                        paymentStatus: order.paymentStatus,
+                        orderStatus: order.orderStatus,
+                        grandTotal: order.grandTotal,
+                        specialInstruction: order.specialInstruction,
+
+                        pickup_address: order.pickup_address
+                            ? {
+                                fullAddress: order.pickup_address.fullAddress,
+                            }
+                            : null,
+
+                        delivery_address: order.delivery_address
+                            ? {
+                                fullAddress: order.delivery_address.fullAddress,
+                            }
+                            : null,
+
+                        delivery_driver: order.delivery_driver
+                            ? {
+                                fullName: order.delivery_driver.fullName,
+                                phoneNumber: order.delivery_driver.phoneNumber,
+                            }
+                            : null,
+
+                        pickup_driver: order.pickup_driver
+                            ? {
+                                fullName: order.pickup_driver.fullName,
+                                phoneNumber: order.pickup_driver.phoneNumber,
+                            }
+                            : null,
+
+                        order_items: order.order_items?.map((item) => ({
+                            id: item.id,
+                            documentId: item.documentId,
+                            quantity: item.quantity,
+                            unitPrice: item.unitPrice,
+                            offerPrice: item.offerPrice,
+                            expressDelivery: item.expressDelivery,
+                            expressDeliveryPrice: item.expressDeliveryPrice,
+                            totalPrice: item.totalPrice,
+                            remarks: item.remarks,
+
+                            service: item.service
+                                ? {
+                                    name: item.service.name,
+                                }
+                                : null,
+
+                            service_varient: item.service_varient
+                                ? {
+                                    name: item.service_varient.name,
+                                    image: item.service_varient.image,
+                                }
+                                : null,
+                        })),
+                    };
+
+                    return ctx.send({
+                        data: customerOrder,
+                    });
+                }
+
+                // ===============================================
+                // Admin / SuperAdmin -> Existing full response
+                // ===============================================
 
                 return ctx.send({
                     data: order,
