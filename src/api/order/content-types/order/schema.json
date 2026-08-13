@@ -41,6 +41,7 @@
         "pending",
         "paid",
         "failed",
+        "cancelled",
         "refunded"
       ]
     },
@@ -63,6 +64,9 @@
         "cancelled",
         "refunded"
       ]
+    },
+    "cancellationReason": {
+      "type": "text"
     },
     "appointmentDate": {
       "type": "date"

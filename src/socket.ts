@@ -686,7 +686,7 @@ export const initSocket = (
                         orderStatus: updatedOrder.orderStatus,
                         grandTotal: updatedOrder.grandTotal,
                         specialInstruction: updatedOrder.specialInstruction,
-
+                       cancellationReason: (updatedOrder as any).cancellationReason,
                         pickup_address: updatedOrder.pickup_address
                             ? {
                                 fullAddress:

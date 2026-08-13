@@ -32,5 +32,13 @@ export default {
                 auth: {},
             },
         },
+        {
+            method: "POST",
+            path: "/orders/:documentId/cancel",
+            handler: "order.cancel",
+            config: {
+                auth: {}
+            },
+        },
     ]
 }

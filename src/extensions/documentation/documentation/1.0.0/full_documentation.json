@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2026-08-13T07:30:09.602Z"
+    "x-generation-date": "2026-08-13T10:10:01.993Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -11070,6 +11070,7 @@
                     "pending",
                     "paid",
                     "failed",
+                    "cancelled",
                     "refunded"
                   ]
                 },
@@ -11091,6 +11092,9 @@
                     "cancelled",
                     "refunded"
                   ]
+                },
+                "cancellationReason": {
+                  "type": "string"
                 },
                 "appointmentDate": {
                   "type": "string",
@@ -12783,8 +12787,12 @@
                                     "enum": [
                                       "system",
                                       "admin",
-                                      "staff"
+                                      "staff",
+                                      "customer"
                                     ]
+                                  },
+                                  "cancellationReason": {
+                                    "type": "string"
                                   },
                                   "createdAt": {
                                     "type": "string",
@@ -17799,6 +17807,7 @@
                                           "pending",
                                           "paid",
                                           "failed",
+                                          "cancelled",
                                           "refunded"
                                         ]
                                       },
@@ -17820,6 +17829,9 @@
                                           "cancelled",
                                           "refunded"
                                         ]
+                                      },
+                                      "cancellationReason": {
+                                        "type": "string"
                                       },
                                       "appointmentDate": {
                                         "type": "string",
@@ -20215,8 +20227,12 @@
                                     "enum": [
                                       "system",
                                       "admin",
-                                      "staff"
+                                      "staff",
+                                      "customer"
                                     ]
+                                  },
+                                  "cancellationReason": {
+                                    "type": "string"
                                   },
                                   "createdAt": {
                                     "type": "string",
@@ -23264,6 +23280,7 @@
                                                 "pending",
                                                 "paid",
                                                 "failed",
+                                                "cancelled",
                                                 "refunded"
                                               ]
                                             },
@@ -23285,6 +23302,9 @@
                                                 "cancelled",
                                                 "refunded"
                                               ]
+                                            },
+                                            "cancellationReason": {
+                                              "type": "string"
                                             },
                                             "appointmentDate": {
                                               "type": "string",
@@ -24031,8 +24051,12 @@
                                                                 "enum": [
                                                                   "system",
                                                                   "admin",
-                                                                  "staff"
+                                                                  "staff",
+                                                                  "customer"
                                                                 ]
+                                                              },
+                                                              "cancellationReason": {
+                                                                "type": "string"
                                                               },
                                                               "createdAt": {
                                                                 "type": "string",
@@ -27797,6 +27821,7 @@
                               "pending",
                               "paid",
                               "failed",
+                              "cancelled",
                               "refunded"
                             ]
                           },
@@ -27818,6 +27843,9 @@
                               "cancelled",
                               "refunded"
                             ]
+                          },
+                          "cancellationReason": {
+                            "type": "string"
                           },
                           "appointmentDate": {
                             "type": "string",
@@ -28564,8 +28592,12 @@
                                               "enum": [
                                                 "system",
                                                 "admin",
-                                                "staff"
+                                                "staff",
+                                                "customer"
                                               ]
+                                            },
+                                            "cancellationReason": {
+                                              "type": "string"
                                             },
                                             "createdAt": {
                                               "type": "string",
@@ -33129,6 +33161,7 @@
                         "pending",
                         "paid",
                         "failed",
+                        "cancelled",
                         "refunded"
                       ]
                     },
@@ -33150,6 +33183,9 @@
                         "cancelled",
                         "refunded"
                       ]
+                    },
+                    "cancellationReason": {
+                      "type": "string"
                     },
                     "appointmentDate": {
                       "type": "string",
@@ -33896,8 +33932,12 @@
                                         "enum": [
                                           "system",
                                           "admin",
-                                          "staff"
+                                          "staff",
+                                          "customer"
                                         ]
+                                      },
+                                      "cancellationReason": {
+                                        "type": "string"
                                       },
                                       "createdAt": {
                                         "type": "string",
@@ -38403,6 +38443,7 @@
                                   "pending",
                                   "paid",
                                   "failed",
+                                  "cancelled",
                                   "refunded"
                                 ]
                               },
@@ -38424,6 +38465,9 @@
                                   "cancelled",
                                   "refunded"
                                 ]
+                              },
+                              "cancellationReason": {
+                                "type": "string"
                               },
                               "appointmentDate": {
                                 "type": "string",
@@ -40674,8 +40718,12 @@
                                       "enum": [
                                         "system",
                                         "admin",
-                                        "staff"
+                                        "staff",
+                                        "customer"
                                       ]
+                                    },
+                                    "cancellationReason": {
+                                      "type": "string"
                                     },
                                     "createdAt": {
                                       "type": "string",
@@ -43426,6 +43474,7 @@
                             "pending",
                             "paid",
                             "failed",
+                            "cancelled",
                             "refunded"
                           ]
                         },
@@ -43447,6 +43496,9 @@
                             "cancelled",
                             "refunded"
                           ]
+                        },
+                        "cancellationReason": {
+                          "type": "string"
                         },
                         "appointmentDate": {
                           "type": "string",
@@ -45697,8 +45749,12 @@
                                 "enum": [
                                   "system",
                                   "admin",
-                                  "staff"
+                                  "staff",
+                                  "customer"
                                 ]
+                              },
+                              "cancellationReason": {
+                                "type": "string"
                               },
                               "createdAt": {
                                 "type": "string",
@@ -46905,6 +46961,7 @@
                   "pending",
                   "paid",
                   "failed",
+                  "cancelled",
                   "refunded"
                 ]
               },
@@ -46926,6 +46983,9 @@
                   "cancelled",
                   "refunded"
                 ]
+              },
+              "cancellationReason": {
+                "type": "string"
               },
               "appointmentDate": {
                 "type": "string",
@@ -47182,6 +47242,7 @@
               "pending",
               "paid",
               "failed",
+              "cancelled",
               "refunded"
             ]
           },
@@ -47203,6 +47264,9 @@
               "cancelled",
               "refunded"
             ]
+          },
+          "cancellationReason": {
+            "type": "string"
           },
           "appointmentDate": {
             "type": "string",
@@ -47362,6 +47426,7 @@
                         "pending",
                         "paid",
                         "failed",
+                        "cancelled",
                         "refunded"
                       ]
                     },
@@ -47383,6 +47448,9 @@
                         "cancelled",
                         "refunded"
                       ]
+                    },
+                    "cancellationReason": {
+                      "type": "string"
                     },
                     "appointmentDate": {
                       "type": "string",
@@ -49015,8 +49083,12 @@
                                     "enum": [
                                       "system",
                                       "admin",
-                                      "staff"
+                                      "staff",
+                                      "customer"
                                     ]
+                                  },
+                                  "cancellationReason": {
+                                    "type": "string"
                                   },
                                   "createdAt": {
                                     "type": "string",
@@ -52529,6 +52601,7 @@
                   "pending",
                   "paid",
                   "failed",
+                  "cancelled",
                   "refunded"
                 ]
               },
@@ -52550,6 +52623,9 @@
                   "cancelled",
                   "refunded"
                 ]
+              },
+              "cancellationReason": {
+                "type": "string"
               },
               "appointmentDate": {
                 "type": "string",
@@ -54242,8 +54318,12 @@
                                   "enum": [
                                     "system",
                                     "admin",
-                                    "staff"
+                                    "staff",
+                                    "customer"
                                   ]
+                                },
+                                "cancellationReason": {
+                                  "type": "string"
                                 },
                                 "createdAt": {
                                   "type": "string",
@@ -57541,8 +57621,12 @@
                 "enum": [
                   "system",
                   "admin",
-                  "staff"
+                  "staff",
+                  "customer"
                 ]
+              },
+              "cancellationReason": {
+                "type": "string"
               },
               "locale": {
                 "type": "string"
@@ -57666,6 +57750,7 @@
                   "pending",
                   "paid",
                   "failed",
+                  "cancelled",
                   "refunded"
                 ]
               },
@@ -57687,6 +57772,9 @@
                   "cancelled",
                   "refunded"
                 ]
+              },
+              "cancellationReason": {
+                "type": "string"
               },
               "appointmentDate": {
                 "type": "string",
@@ -59379,8 +59467,12 @@
                                   "enum": [
                                     "system",
                                     "admin",
-                                    "staff"
+                                    "staff",
+                                    "customer"
                                   ]
+                                },
+                                "cancellationReason": {
+                                  "type": "string"
                                 },
                                 "createdAt": {
                                   "type": "string",
@@ -62501,8 +62593,12 @@
             "enum": [
               "system",
               "admin",
-              "staff"
+              "staff",
+              "customer"
             ]
+          },
+          "cancellationReason": {
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
@@ -62763,6 +62859,7 @@
                   "pending",
                   "paid",
                   "failed",
+                  "cancelled",
                   "refunded"
                 ]
               },
@@ -62784,6 +62881,9 @@
                   "cancelled",
                   "refunded"
                 ]
+              },
+              "cancellationReason": {
+                "type": "string"
               },
               "appointmentDate": {
                 "type": "string",
@@ -64476,8 +64576,12 @@
                                   "enum": [
                                     "system",
                                     "admin",
-                                    "staff"
+                                    "staff",
+                                    "customer"
                                   ]
+                                },
+                                "cancellationReason": {
+                                  "type": "string"
                                 },
                                 "createdAt": {
                                   "type": "string",
@@ -71819,6 +71923,7 @@
                                             "pending",
                                             "paid",
                                             "failed",
+                                            "cancelled",
                                             "refunded"
                                           ]
                                         },
@@ -71840,6 +71945,9 @@
                                             "cancelled",
                                             "refunded"
                                           ]
+                                        },
+                                        "cancellationReason": {
+                                          "type": "string"
                                         },
                                         "appointmentDate": {
                                           "type": "string",
@@ -72586,8 +72694,12 @@
                                                             "enum": [
                                                               "system",
                                                               "admin",
-                                                              "staff"
+                                                              "staff",
+                                                              "customer"
                                                             ]
+                                                          },
+                                                          "cancellationReason": {
+                                                            "type": "string"
                                                           },
                                                           "createdAt": {
                                                             "type": "string",
@@ -77223,6 +77335,7 @@
                                         "pending",
                                         "paid",
                                         "failed",
+                                        "cancelled",
                                         "refunded"
                                       ]
                                     },
@@ -77244,6 +77357,9 @@
                                         "cancelled",
                                         "refunded"
                                       ]
+                                    },
+                                    "cancellationReason": {
+                                      "type": "string"
                                     },
                                     "appointmentDate": {
                                       "type": "string",
@@ -77990,8 +78106,12 @@
                                                         "enum": [
                                                           "system",
                                                           "admin",
-                                                          "staff"
+                                                          "staff",
+                                                          "customer"
                                                         ]
+                                                      },
+                                                      "cancellationReason": {
+                                                        "type": "string"
                                                       },
                                                       "createdAt": {
                                                         "type": "string",
@@ -82319,6 +82439,7 @@
                                       "pending",
                                       "paid",
                                       "failed",
+                                      "cancelled",
                                       "refunded"
                                     ]
                                   },
@@ -82340,6 +82461,9 @@
                                       "cancelled",
                                       "refunded"
                                     ]
+                                  },
+                                  "cancellationReason": {
+                                    "type": "string"
                                   },
                                   "appointmentDate": {
                                     "type": "string",
@@ -83086,8 +83210,12 @@
                                                       "enum": [
                                                         "system",
                                                         "admin",
-                                                        "staff"
+                                                        "staff",
+                                                        "customer"
                                                       ]
+                                                    },
+                                                    "cancellationReason": {
+                                                      "type": "string"
                                                     },
                                                     "createdAt": {
                                                       "type": "string",
@@ -87654,6 +87782,7 @@
                                       "pending",
                                       "paid",
                                       "failed",
+                                      "cancelled",
                                       "refunded"
                                     ]
                                   },
@@ -87675,6 +87804,9 @@
                                       "cancelled",
                                       "refunded"
                                     ]
+                                  },
+                                  "cancellationReason": {
+                                    "type": "string"
                                   },
                                   "appointmentDate": {
                                     "type": "string",
@@ -88421,8 +88553,12 @@
                                                       "enum": [
                                                         "system",
                                                         "admin",
-                                                        "staff"
+                                                        "staff",
+                                                        "customer"
                                                       ]
+                                                    },
+                                                    "cancellationReason": {
+                                                      "type": "string"
                                                     },
                                                     "createdAt": {
                                                       "type": "string",
@@ -92751,6 +92887,7 @@
                             "pending",
                             "paid",
                             "failed",
+                            "cancelled",
                             "refunded"
                           ]
                         },
@@ -92772,6 +92909,9 @@
                             "cancelled",
                             "refunded"
                           ]
+                        },
+                        "cancellationReason": {
+                          "type": "string"
                         },
                         "appointmentDate": {
                           "type": "string",
@@ -95022,8 +95162,12 @@
                                 "enum": [
                                   "system",
                                   "admin",
-                                  "staff"
+                                  "staff",
+                                  "customer"
                                 ]
+                              },
+                              "cancellationReason": {
+                                "type": "string"
                               },
                               "createdAt": {
                                 "type": "string",

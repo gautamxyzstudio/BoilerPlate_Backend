@@ -47,9 +47,13 @@
       "enum": [
         "system",
         "admin",
-        "staff"
+        "staff",
+        "customer"
       ],
       "default": "system"
+    },
+    "cancellationReason": {
+      "type": "text"
     }
   }
 }

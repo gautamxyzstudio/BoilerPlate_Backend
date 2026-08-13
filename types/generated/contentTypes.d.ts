@@ -808,6 +808,7 @@ export interface ApiOrderStatusHistoryOrderStatusHistory
     draftAndPublish: false;
   };
   attributes: {
+    cancellationReason: Schema.Attribute.Text;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -844,7 +845,9 @@ export interface ApiOrderStatusHistoryOrderStatusHistory
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    updatedByType: Schema.Attribute.Enumeration<['system', 'admin', 'staff']> &
+    updatedByType: Schema.Attribute.Enumeration<
+      ['system', 'admin', 'staff', 'customer']
+    > &
       Schema.Attribute.DefaultTo<'system'>;
   };
 }
@@ -862,6 +865,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
   attributes: {
     appointmentDate: Schema.Attribute.Date;
     appointmentTime: Schema.Attribute.Time;
+    cancellationReason: Schema.Attribute.Text;
     completedAt: Schema.Attribute.DateTime;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -917,7 +921,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     >;
     paymentMethod: Schema.Attribute.Enumeration<['online', 'cod']>;
     paymentStatus: Schema.Attribute.Enumeration<
-      ['pending', 'paid', 'failed', 'refunded']
+      ['pending', 'paid', 'failed', 'cancelled', 'refunded']
     > &
       Schema.Attribute.DefaultTo<'pending'>;
     pickedUpAt: Schema.Attribute.DateTime;

@@ -1325,6 +1325,177 @@ export default factories.createCoreController(
                     error?.message || "Unable to delete order."
                 );
             }
+        },
+
+        async cancel(ctx) {
+            try {
+                const user = ctx.state.user;
+
+                // ============================================
+                // 1. Check logged-in user
+                // ============================================
+
+                if (!user) {
+                    return ctx.unauthorized("You must be logged in.");
+                }
+
+                const { documentId } = ctx.params;
+                const { cancellationReason } = ctx.request.body;
+
+                // ============================================
+                // 2. Validate cancellation reason
+                // ============================================
+
+                if (!cancellationReason || !cancellationReason.trim()) {
+                    return ctx.badRequest("Cancellation reason is required.");
+                }
+
+                // ============================================
+                // 3. Find order + user profile
+                // ============================================
+
+                const order = await strapi
+                    .documents("api::order.order")
+                    .findOne({
+                        documentId,
+                        populate: {
+                            user_profile: {
+                                populate: {
+                                    users_permissions_user: true,
+                                },
+                            },
+                        },
+                    });
+
+                if (!order) {
+                    return ctx.notFound("Order not found.");
+                }
+
+                // ============================================
+                // 4. Verify customer owns the order
+                // ============================================
+
+                const orderUserId = order.user_profile?.users_permissions_user?.id;
+
+                if (!orderUserId || orderUserId !== user.id) {
+                    return ctx.forbidden(
+                        "You are not authorized to cancel this order."
+                    );
+                }
+
+                // ============================================
+                // 5. Check order cancellation status
+                // ============================================
+
+                if (order.orderStatus === "cancelled") {
+                    return ctx.badRequest("Order is already cancelled.");
+                }
+
+                if (order.orderStatus !== "pending") {
+                    return ctx.badRequest(
+                        "Order can only be cancelled when its status is pending."
+                    );
+                }
+
+                // ============================================
+                // 6. Update order
+                // ============================================
+
+                const updatedOrder = await strapi
+                    .documents("api::order.order")
+                    .update({
+                        documentId,
+                        data: {
+                            orderStatus: "cancelled",
+                            paymentStatus: "cancelled",
+                            cancellationReason: cancellationReason.trim(),
+                        },
+                        populate: {
+                            payment_collections: true,
+                        },
+                    });
+
+                // ============================================
+                // 7. Update Payment Collection
+                // ============================================
+
+                const paymentCollections = (updatedOrder as any).payment_collections;
+
+                if (paymentCollections?.length) {
+                    for (const payment of paymentCollections) {
+                        await strapi
+                            .documents("api::payment-collection.payment-collection")
+                            .update({
+                                documentId: payment.documentId,
+                                data: {
+                                    payment_status: "cancelled",
+                                },
+                            });
+                    }
+                }
+
+                // ============================================
+                // 8. Create order status history
+                // ============================================
+
+                const statusResult = await strapi
+                    .documents("api::order-status-history.order-status-history" as any)
+                    .create({
+                        data: {
+                            statusUpdatedTo: "cancelled",
+                            updatedByType: "customer",
+                            cancellationReason: cancellationReason.trim(),
+
+                            order: {
+                                connect: [
+                                    {
+                                        documentId: documentId,
+                                    },
+                                ],
+                            },
+
+                            status_updated_by: {
+                                connect: [
+                                    {
+                                        documentId: user.documentId,
+                                    },
+                                ],
+                            },
+                        },
+                    });
+
+                // ============================================
+                // Emit Updated Order To Customer
+                // ============================================
+
+                const io = getIO();
+
+                io.to(`order-${documentId}`).emit("order-updated", {
+                    order: updatedOrder,
+                    status: statusResult,
+                });
+
+                io.to("admin-orders").emit("order-updated", {
+                    order: updatedOrder,
+                    status: statusResult,
+                });
+
+                // ============================================
+                // 9. Return response
+                // ============================================
+
+                return ctx.send({
+                    message: "Order cancelled successfully.",
+                    documentId: updatedOrder?.documentId,
+                    orderNo: updatedOrder?.orderNo,
+                });
+            } catch (error) {
+                console.error("Cancel order error:", error);
+
+                return ctx.internalServerError(
+                    "Something went wrong while cancelling the order."
+                );
+            }
         }
 
     })
