@@ -686,7 +686,7 @@ export const initSocket = (
                         orderStatus: updatedOrder.orderStatus,
                         grandTotal: updatedOrder.grandTotal,
                         specialInstruction: updatedOrder.specialInstruction,
-                       cancellationReason: (updatedOrder as any).cancellationReason,
+                        cancellationReason: (updatedOrder as any).cancellationReason,
                         pickup_address: updatedOrder.pickup_address
                             ? {
                                 fullAddress:
@@ -810,6 +810,313 @@ export const initSocket = (
                             message:
                                 error?.message ||
                                 "Failed to update order.",
+                        }
+                    );
+                }
+            }
+        );
+
+        // ===============================================
+        // Mark Order As Paid
+        // ===============================================
+
+        socket.on(
+            "mark-order-paid",
+            async (data) => {
+
+                try {
+
+                    const {
+                        orderDocumentId,
+                    } = data || {};
+
+                    // ===========================================
+                    // 1. Validate Order Document ID
+                    // ===========================================
+
+                    if (!orderDocumentId) {
+                        socket.emit(
+                            "mark-order-paid-error",
+                            {
+                                message:
+                                    "Order document ID is required.",
+                            }
+                        );
+
+                        return;
+                    }
+
+                    // ===========================================
+                    // 2. Check Logged-in User
+                    // ===========================================
+
+                    const loggedInUser =
+                        socket.data.user;
+
+                    if (!loggedInUser) {
+                        socket.emit(
+                            "mark-order-paid-error",
+                            {
+                                message:
+                                    "You are not authenticated.",
+                            }
+                        );
+
+                        return;
+                    }
+
+                    // ===========================================
+                    // 3. Check Admin / Staff Role
+                    // ===========================================
+
+                    const userRole =
+                        (loggedInUser.role?.name || "")
+                            .replace(/\s+/g, "")
+                            .toLowerCase();
+
+                    const allowedRoles = [
+                        "admin",
+                        "superadmin",
+                        "staff",
+                    ];
+
+                    if (!allowedRoles.includes(userRole)) {
+                        socket.emit(
+                            "mark-order-paid-error",
+                            {
+                                message:
+                                    "You are not authorized to mark orders as paid.",
+                            }
+                        );
+
+                        return;
+                    }
+
+                    // ===========================================
+                    // 4. Find Order
+                    // ===========================================
+
+                    const order =
+                        await strapi
+                            .documents("api::order.order")
+                            .findOne({
+                                documentId:
+                                    orderDocumentId,
+                                populate: {
+                                    payment_collections:
+                                        true,
+                                },
+                            });
+
+                    if (!order) {
+                        socket.emit(
+                            "mark-order-paid-error",
+                            {
+                                message:
+                                    "Order not found.",
+                            }
+                        );
+
+                        return;
+                    }
+
+                    // ===========================================
+                    // 5. Check Payment Method
+                    // ===========================================
+
+                    if (
+                        order.paymentMethod !==
+                        "cod"
+                    ) {
+                        socket.emit(
+                            "mark-order-paid-error",
+                            {
+                                message:
+                                    "Only COD orders can be marked as paid manually.",
+                            }
+                        );
+
+                        return;
+                    }
+
+                    // ===========================================
+                    // 6. Check Order Status
+                    // ===========================================
+
+                    if (
+                        order.orderStatus ===
+                        "cancelled"
+                    ) {
+                        socket.emit(
+                            "mark-order-paid-error",
+                            {
+                                message:
+                                    "Cancelled order cannot be marked as paid.",
+                            }
+                        );
+
+                        return;
+                    }
+
+                    // ===========================================
+                    // 7. Check Current Payment Status
+                    // ===========================================
+
+                    if (
+                        order.paymentStatus ===
+                        "paid"
+                    ) {
+                        socket.emit(
+                            "mark-order-paid-error",
+                            {
+                                message:
+                                    "Order payment is already marked as paid.",
+                            }
+                        );
+
+                        return;
+                    }
+
+                    if (
+                        order.paymentStatus ===
+                        "refunded"
+                    ) {
+                        socket.emit(
+                            "mark-order-paid-error",
+                            {
+                                message:
+                                    "Refunded order cannot be marked as paid.",
+                            }
+                        );
+
+                        return;
+                    }
+
+                    // ===========================================
+                    // 8. Update Order Payment Status
+                    // ===========================================
+
+                    await strapi
+                        .documents("api::order.order")
+                        .update({
+                            documentId:
+                                orderDocumentId,
+                            data: {
+                                paymentStatus:
+                                    "paid",
+                            },
+                        });
+
+                    // ===========================================
+                    // 9. Update Payment Collection
+                    // ===========================================
+
+                    const paymentCollections =
+                        (order as any)
+                            .payment_collections;
+
+                    if (
+                        paymentCollections?.length
+                    ) {
+
+                        for (
+                            const payment
+                            of paymentCollections
+                        ) {
+
+                            await strapi
+                                .documents(
+                                    "api::payment-collection.payment-collection"
+                                )
+                                .update({
+                                    documentId:
+                                        payment.documentId,
+                                    data: {
+                                        payment_status:
+                                            "paid",
+                                        paymentDate:
+                                            new Date(),
+                                    },
+                                });
+                        }
+                    }
+
+                    // ===========================================
+                    // 10. Get Latest Updated Order
+                    // ===========================================
+
+                    const updatedOrder =
+                        await strapi
+                            .documents(
+                                "api::order.order"
+                            )
+                            .findOne({
+                                documentId:
+                                    orderDocumentId,
+                                populate: {
+                                    payment_collections:
+                                        true,
+
+                                },
+                            });
+
+                    if (!updatedOrder) {
+                        socket.emit(
+                            "mark-order-paid-error",
+                            {
+                                message:
+                                    "Updated order could not be found.",
+                            }
+                        );
+
+                        return;
+                    }
+
+                    // ===========================================
+                    // 11. Inform Admin / Staff
+                    // ===========================================
+
+                    io.to("admin-orders").emit(
+                        "order-updated",
+                        {
+                            order: updatedOrder,
+                            status: null,
+                        }
+                    );
+
+                    // ===========================================
+                    // 12. Success Response To Admin
+                    // ===========================================
+
+                    socket.emit(
+                        "mark-order-paid-success",
+                        {
+                            message:
+                                "Order payment marked as paid successfully.",
+                            orderDocumentId:
+                                updatedOrder.documentId,
+                            orderNo:
+                                updatedOrder.orderNo,
+                            orderStatus:
+                                updatedOrder.orderStatus,
+                            paymentStatus:
+                                updatedOrder.paymentStatus,
+                        }
+                    );
+
+                } catch (error: any) {
+
+                    console.error(
+                        "Socket Mark Order Paid Error:",
+                        error
+                    );
+
+                    socket.emit(
+                        "mark-order-paid-error",
+                        {
+                            message:
+                                error?.message ||
+                                "Failed to mark order as paid.",
                         }
                     );
                 }
