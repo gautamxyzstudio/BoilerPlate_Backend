@@ -40,5 +40,13 @@ export default {
                 auth: {}
             },
         },
+        {
+            method: "PUT",
+            path: "/orders/:documentId/mark-paid",
+            handler: "custom-order.markPaid",
+            config: {
+              auth:{}
+            },
+        },
     ]
 }
