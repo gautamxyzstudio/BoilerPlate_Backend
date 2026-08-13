@@ -130,7 +130,8 @@ export const initSocket = (
 
             if (
                 roleName === "admin" ||
-                roleName === "superadmin"
+                roleName === "superadmin" ||
+                roleName === "staff"
             ) {
                 socket.join("admin-notifications");
                 socket.join("admin-orders");
@@ -265,13 +266,14 @@ export const initSocket = (
                     // User Role
                     // ===========================================
 
-                    const userRole =
-                        loggedInUser.role?.name;
+                    const userRole = (loggedInUser.role?.name || "")
+                        .replace(/\s+/g, "")
+                        .toLowerCase();
 
                     const allowedRoles = [
-                        "Admin",
-                        "superAdmin",
-                        "Staff",
+                        "admin",
+                        "superadmin",
+                        "staff",
                     ];
 
                     if (!allowedRoles.includes(userRole)) {
@@ -663,6 +665,15 @@ export const initSocket = (
                             order: updatedOrder,
                             status:
                                 statusResult,
+                        }
+                    );
+
+                    // For Admin/Staff order list
+                    io.to("admin-orders").emit(
+                        "order-updated",
+                        {
+                            order: updatedOrder,
+                            status: statusResult,
                         }
                     );
 
