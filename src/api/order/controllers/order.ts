@@ -241,7 +241,6 @@ export default factories.createCoreController(
 
 
                 if (paymentMethod === "cod") {
-
                     // ===============================================
                     // Create Order
                     // ===============================================
@@ -257,8 +256,10 @@ export default factories.createCoreController(
                                     pickupTime: cart.pickupTime,
                                     deliveryDate: cart.deliveryDate,
                                     deliveryTime: cart.deliveryTime,
-                                    delivery_address: cart.delivery_address?.documentId ?? null,
+                                    delivery_address:
+                                        cart.delivery_address?.documentId ?? null,
                                 }),
+
                                 ...(orderScheduleType === "appointment" && {
                                     appointmentDate: cart.appointmentDate,
                                     appointmentTime: cart.appointmentTime,
@@ -276,162 +277,239 @@ export default factories.createCoreController(
 
                                 specialInstruction: (cart as any).specialInstructions,
 
-                                pickup_address: (cart as any).pickup_address?.documentId ?? null,
+                                pickup_address:
+                                    (cart as any).pickup_address?.documentId ?? null,
 
                                 user_profile: userProfile.documentId,
                             },
+
                             transaction: trx,
                         });
-
-                    let paymentCollection: any = null;
 
                     // ===============================================
                     // Create Order Items
                     // ===============================================
 
-                    for (const item of (cart.cart_items as any[])) {
-                        await strapi.documents("api::order-item.order-item").create({
-                            data: {
-                                order: createdOrder.documentId,
+                    for (const item of cart.cart_items as any[]) {
+                        await strapi
+                            .documents("api::order-item.order-item")
+                            .create({
+                                data: {
+                                    order: createdOrder.documentId,
 
-                                service: item.service.documentId,
+                                    service: item.service.documentId,
 
-                                service_varient: item.service_varient?.documentId ?? null,
+                                    service_varient:
+                                        item.service_varient?.documentId ?? null,
 
-                                service_pricing: item.service_pricing.documentId,
+                                    service_pricing:
+                                        item.service_pricing.documentId,
 
-                                quantity: item.quantity,
+                                    quantity: item.quantity,
 
-                                unitPrice: item.unitPrice,
+                                    unitPrice: item.unitPrice,
 
-                                offerPrice: item.offerPrice,
+                                    offerPrice: item.offerPrice,
 
-                                expressDelivery: item.expressDelivery,
+                                    expressDelivery: item.expressDelivery,
 
-                                expressDeliveryPrice:
-                                    item.expressDeliveryPrice,
+                                    expressDeliveryPrice:
+                                        item.expressDeliveryPrice,
 
-                                totalPrice: item.totalPrice,
+                                    totalPrice: item.totalPrice,
 
-                                remarks: item.remarks,
-                            },
-                            transaction: trx,
-                        });
+                                    remarks: item.remarks,
+                                },
+
+                                transaction: trx,
+                            });
                     }
 
                     // ===============================================
                     // Create Initial Order Status History
                     // ===============================================
 
-                    await strapi.documents("api::order-status-history.order-status-history" as any).create({
-                        data: {
-                            order: createdOrder.documentId,
-                            statusUpdatedTo: "pending",
-                            updatedByType: "system",
+                    await strapi
+                        .documents(
+                            "api::order-status-history.order-status-history" as any
+                        )
+                        .create({
+                            data: {
+                                order: createdOrder.documentId,
+                                statusUpdatedTo: "pending",
+                                updatedByType: "system",
+                            },
 
-                        },
-                        transaction: trx,
-                    });
+                            transaction: trx,
+                        });
 
                     // ===============================================
-                    // Create Payment Collection 
+                    // Create Payment Collection
                     // ===============================================
-                    paymentCollection = await strapi
-                        .documents("api::payment-collection.payment-collection")
+
+                    await strapi
+                        .documents(
+                            "api::payment-collection.payment-collection"
+                        )
                         .create({
                             data: {
                                 order: createdOrder.documentId,
                                 amount: Number((cart as any).grandTotal),
                                 payment_status: "pending",
                             },
+
                             transaction: trx,
                         });
+
+                    // ===============================================
+                    // COMMIT TRANSACTION
+                    // ===============================================
 
                     await trx.commit();
 
                     // ===============================================
-                    // Return Complete Order
+                    // BACKGROUND TASKS
                     // ===============================================
 
-                    const order = await strapi
-                        .documents("api::order.order")
-                        .findOne({
-                            documentId: createdOrder.documentId,
+                    const orderDocumentId = createdOrder.documentId;
 
-                            populate: {
-                                pickup_address: true,
+                    const cartDocumentId = (cart as any).documentId;
 
-                                delivery_address: true,
+                    const cartItems = [...((cart as any).cart_items || [])];
 
-                                user_profile: true,
-
-                                order_items: {
-                                    populate: {
-                                        service: true,
-                                        service_varient: true,
-                                        service_pricing: true,
-                                    },
-                                },
-                            },
-                        });
-
-                    const emailItems = (cart as any).cart_items.map((item: any) => ({
-                        serviceName: item.service?.name,
-                        variantName: item.service_varient?.name,
-                        quantity: item.quantity,
-                        totalPrice: item.totalPrice,
-                    }));
-
-                    await sendOrderConfirmationEmail(
-                        userProfile.email,
-                        userProfile.fullName,
-                        orderNo,
-                        Number((cart as any).grandTotal),
-                        paymentMethod,
-                        emailItems
-                    );
+                    const email = userProfile.email;
+                    const fullName = userProfile.fullName;
+                    const grandTotal = Number((cart as any).grandTotal);
 
                     // ===============================================
-                    // Clear Cart
+                    // RETURN RESPONSE IMMEDIATELY
                     // ===============================================
 
-                    for (const item of (cart as any).cart_items) {
-                        await strapi.documents("api::cart-item.cart-item").delete({
-                            documentId: item.documentId,
-                        });
-                    }
-
-                    await strapi.documents("api::cart.cart").delete({
-                        documentId: (cart as any).documentId,
-                    });
-
-                    // ==========================================
-                    // Create Notification
-                    // ==========================================
-
-                    await createNotification({
-                        strapi,
-                        title: "New Order Received",
-                        description: `New order ${orderNo} has been received.`,
-                        type: "order",
-                    });
-
-                    // ==========================================
-                    // Emit New Order To Admin/Staff
-                    // ==========================================
-
-                    const io = getIO();
-
-                    io.to("admin-orders").emit("order-created", {
-                        order,
-                    });
-
-                    return ctx.send({
+                    const response = {
                         message: "Order created successfully.",
-                        data: order,
-                    });
-                }
+                        documentId: createdOrder.documentId,
+                        orderNo,
+                    };
 
+                    // ===============================================
+                    // Run Non-Critical Tasks in Background
+                    // ===============================================
+
+                    setImmediate(async () => {
+                        // ==========================================
+                        // 1. Send Order Confirmation Email
+                        // ==========================================
+
+                        try {
+                            const emailItems = cartItems.map((item: any) => ({
+                                serviceName: item.service?.name,
+                                variantName: item.service_varient?.name,
+                                quantity: item.quantity,
+                                totalPrice: item.totalPrice,
+                            }));
+
+                            await sendOrderConfirmationEmail(
+                                email,
+                                fullName,
+                                orderNo,
+                                grandTotal,
+                                paymentMethod,
+                                emailItems
+                            );
+                        } catch (error) {
+                            strapi.log.error(
+                                `Order ${orderNo} - Email failed:`,
+                                error
+                            );
+                        }
+
+                        // ==========================================
+                        // 2. Clear Cart
+                        // ==========================================
+
+                        try {
+                            for (const item of cartItems) {
+                                await strapi
+                                    .documents("api::cart-item.cart-item")
+                                    .delete({
+                                        documentId: item.documentId,
+                                    });
+                            }
+
+                            await strapi
+                                .documents("api::cart.cart")
+                                .delete({
+                                    documentId: cartDocumentId,
+                                });
+                        } catch (error) {
+                            strapi.log.error(
+                                `Order ${orderNo} - Cart cleanup failed:`,
+                                error
+                            );
+                        }
+
+                        // ==========================================
+                        // 3. Create Notification
+                        // ==========================================
+
+                        try {
+                            await createNotification({
+                                strapi,
+                                title: "New Order Received",
+                                description: `New order ${orderNo} has been received.`,
+                                type: "order",
+                            });
+                        } catch (error) {
+                            strapi.log.error(
+                                `Order ${orderNo} - Notification failed:`,
+                                error
+                            );
+                        }
+
+                        // ==========================================
+                        // 4. Fetch Order + Emit Socket
+                        // ==========================================
+
+                        try {
+                            const order = await strapi
+                                .documents("api::order.order")
+                                .findOne({
+                                    documentId: orderDocumentId,
+
+                                    populate: {
+                                        pickup_address: true,
+                                        delivery_address: true,
+                                        user_profile: true,
+
+                                        order_items: {
+                                            populate: {
+                                                service: true,
+                                                service_varient: true,
+                                                service_pricing: true,
+                                            },
+                                        },
+                                    },
+                                });
+
+                            const io = getIO();
+
+                            io.to("admin-orders").emit("order-created", {
+                                order,
+                            });
+                        } catch (error) {
+                            strapi.log.error(
+                                `Order ${orderNo} - Socket emission failed:`,
+                                error
+                            );
+                        }
+                    });
+
+                    // ===============================================
+                    // FINAL RESPONSE
+                    // ===============================================
+
+                    return ctx.send(response);
+                }
 
             } catch (error: any) {
                 try {
@@ -1028,7 +1106,9 @@ export default factories.createCoreController(
                             service_varient: item.service_varient
                                 ? {
                                     name: item.service_varient.name,
-                                    image: item.service_varient.image,
+                                    image: item.service_varient.image
+                                        ? item.service_varient.image.url
+                                        : null,
                                 }
                                 : null,
                         })),

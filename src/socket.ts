@@ -642,19 +642,124 @@ export const initSocket = (
                         await strapi
                             .documents("api::order.order")
                             .findOne({
-                                documentId:
-                                    orderDocumentId,
+                                documentId: orderDocumentId,
                                 populate: {
                                     pickup_driver: true,
                                     delivery_driver: true,
                                     pickup_address: true,
                                     delivery_address: true,
-                                    order_items: true,
+                                    order_items: {
+                                        populate: {
+                                            service: true,
+                                            service_varient: {
+                                                populate: {
+                                                    image: true,
+                                                },
+                                            },
+                                        },
+                                    },
                                 },
                             });
 
+                    if (!updatedOrder) {
+                        socket.emit("order-update-error", {
+                            message: "Updated order could not be found.",
+                        });
+
+                        return;
+                    }
+
                     // ===========================================
-                    // Emit Updated Order
+                    // Customer Order Response
+                    // ===========================================
+
+                    const customerOrder = {
+                        id: updatedOrder.id,
+                        documentId: updatedOrder.documentId,
+                        orderNo: updatedOrder.orderNo,
+                        pickupDate: updatedOrder.pickupDate,
+                        pickupTime: updatedOrder.pickupTime,
+                        deliveryDate: updatedOrder.deliveryDate,
+                        deliveryTime: updatedOrder.deliveryTime,
+                        paymentMethod: updatedOrder.paymentMethod,
+                        paymentStatus: updatedOrder.paymentStatus,
+                        orderStatus: updatedOrder.orderStatus,
+                        grandTotal: updatedOrder.grandTotal,
+                        specialInstruction: updatedOrder.specialInstruction,
+
+                        pickup_address: updatedOrder.pickup_address
+                            ? {
+                                fullAddress:
+                                    updatedOrder.pickup_address.fullAddress,
+                            }
+                            : null,
+
+                        delivery_address: updatedOrder.delivery_address
+                            ? {
+                                fullAddress:
+                                    updatedOrder.delivery_address.fullAddress,
+                            }
+                            : null,
+
+                        delivery_driver: updatedOrder.delivery_driver
+                            ? {
+                                fullName:
+                                    updatedOrder.delivery_driver.fullName,
+                                phoneNumber:
+                                    updatedOrder.delivery_driver.phoneNumber,
+                            }
+                            : null,
+
+                        pickup_driver: updatedOrder.pickup_driver
+                            ? {
+                                fullName:
+                                    updatedOrder.pickup_driver.fullName,
+                                phoneNumber:
+                                    updatedOrder.pickup_driver.phoneNumber,
+                            }
+                            : null,
+
+                        order_items: updatedOrder.order_items?.map(
+                            (item: any) => ({
+                                id: item.id,
+                                documentId: item.documentId,
+                                quantity: item.quantity,
+                                unitPrice: item.unitPrice,
+                                offerPrice: item.offerPrice,
+                                expressDelivery:
+                                    item.expressDelivery,
+                                expressDeliveryPrice:
+                                    item.expressDeliveryPrice,
+                                totalPrice: item.totalPrice,
+                                remarks: item.remarks,
+
+                                service: item.service
+                                    ? {
+                                        name:
+                                            item.service.name,
+                                    }
+                                    : null,
+
+                                service_varient:
+                                    item.service_varient
+                                        ? {
+                                            name:
+                                                item.service_varient.name,
+                                            image:
+                                                item.service_varient.image
+                                                    ? item
+                                                        .service_varient
+                                                        .image
+                                                        .url
+                                                    : null,
+                                        }
+                                        : null,
+                            })
+                        ),
+                    };
+
+                    // ===========================================
+                    // Emit Updated Order To Customer
                     // ===========================================
 
                     io.to(
@@ -662,13 +767,15 @@ export const initSocket = (
                     ).emit(
                         "order-updated",
                         {
-                            order: updatedOrder,
-                            status:
-                                statusResult,
+                            order: customerOrder,
+                            status: statusResult,
                         }
                     );
 
-                    // For Admin/Staff order list
+                    // ===========================================
+                    // Emit Full Order To Admin / Staff
+                    // ===========================================
+
                     io.to("admin-orders").emit(
                         "order-updated",
                         {

@@ -523,28 +523,6 @@ export default factories.createCoreController(
                 }
 
                 // ===============================================
-                // Fetch Updated Cart Items
-                // ===============================================
-
-                const cartItems = await strapi
-                    .documents("api::cart-item.cart-item")
-                    .findMany({
-                        filters: {
-                            cart: {
-                                documentId: cart.documentId,
-                            },
-                        },
-                    });
-
-                subTotal = 0;
-
-                for (const item of cartItems) {
-                    subTotal += Number(item.totalPrice || 0);
-                }
-
-                subTotal = Number(subTotal.toFixed(2));
-
-                // ===============================================
                 // Calculate Cart Totals
                 // ===============================================
 
@@ -598,124 +576,64 @@ export default factories.createCoreController(
                 trx = null;
 
                 // ===============================================
-                // Return Populated Cart
+                // Prepare Required Cart Response
                 // ===============================================
 
-                const populatedCart = await strapi
-                    .documents("api::cart.cart")
-                    .findOne({
-                        documentId: cart.documentId,
-                        populate: {
-                            pickup_address: true,
+                const response: any = {
+                    grandTotal,
 
-                            delivery_address: true,
-
-                            user_profile: true,
-
-                            cart_items: {
-                                populate: {
-                                    service: true,
-                                    service_varient: {
-                                        populate: {
-                                            image: true,
-                                        },
-                                    },
-                                    service_pricing: true,
-                                },
-                            },
-                        },
-                    });
-
-                if (!populatedCart) {
-                    return ctx.notFound("Cart not found.");
-                }
-
-                const cartData: any = populatedCart;
-
-                const response = {
-                    documentId: cartData.documentId,
-                    createdAt: cartData.createdAt,
-
-                    subTotal: cartData.subTotal,
-                    tax: cartData.tax,
-                    discount: cartData.discount,
-                    deliveryCharge: cartData.deliveryCharge,
-                    grandTotal: cartData.grandTotal,
-                    pickupAddress: cartData.pickup_address
-                        ? {
-                            documentId: cartData.pickup_address.documentId,
-                            addressType: cartData.pickup_address.addressType,
-                            streetAddress: cartData.pickup_address.streetAddress,
-                            fullAddress: cartData.pickup_address.fullAddress,
-                            city: cartData.pickup_address.city,
-                            state: cartData.pickup_address.state,
-                            postalCode: cartData.pickup_address.postalCode,
-                        }
-                        : null,
-
-                    deliveryAddress: cartData.delivery_address
-                        ? {
-                            documentId: cartData.delivery_address.documentId,
-                            addressType: cartData.delivery_address.addressType,
-                            streetAddress: cartData.delivery_address.streetAddress,
-                            fullAddress: cartData.delivery_address.fullAddress,
-                            city: cartData.delivery_address.city,
-                            state: cartData.delivery_address.state,
-                            postalCode: cartData.delivery_address.postalCode,
-                        }
-                        : null,
-
-                    pickupDate: cartData.pickupDate,
-                    pickupTime: cartData.pickupTime,
-
-                    deliveryDate: cartData.deliveryDate,
-                    deliveryTime: cartData.deliveryTime,
-
-                    appointmentDate: cartData.appointmentDate,
-                    appointmentTime: cartData.appointmentTime,
-
-                    specialInstructions: cartData.specialInstructions,
-                    cartItems: (cartData.cart_items ?? []).map((item: any) => ({
-                        documentId: item.documentId,
-
+                    cartItems: preparedCartItems.map((item: any) => ({
                         quantity: item.quantity,
-                        unitPrice: item.unitPrice,
-                        offerPrice: item.offerPrice,
                         totalPrice: item.totalPrice,
 
-                        expressDelivery: item.expressDelivery,
-                        expressDeliveryPrice: item.expressDeliveryPrice,
-
-                        remarks: item.remarks,
-
                         service: {
-                            documentId: item.service.documentId,
-                            name: item.service.name,
-                            pricingModel: item.service.pricingModel,
-                            scheduleType: item.service.scheduleType,
+                            name: item.serviceName,
                         },
 
-                        serviceVariant: item.service_varient
+                        serviceVariant: item.variantName
                             ? {
-                                documentId: item.service_varient.documentId,
-                                name: item.service_varient.name,
-                                expressDeliveryAvailable:
-                                    item.service_varient.expressDeliveryAvailable,
-                                image: item.service_varient.image?.url ?? null,
-                            }
-                            : null,
-
-                        servicePricing: item.service_pricing
-                            ? {
-                                documentId: item.service_pricing.documentId,
-                                price: item.service_pricing.price,
-                                offerPrice: item.service_pricing.offerPrice,
-                                expressDeliveryPrice:
-                                    item.service_pricing.expressDeliveryPrice,
+                                name: item.variantName,
                             }
                             : null,
                     })),
                 };
+
+                // ===============================================
+                // Pickup & Delivery Response
+                // ===============================================
+
+                if (scheduleType === "pickup_delivery") {
+                    response.pickupAddress = pickupAddress
+                        ? {
+                            fullAddress: pickupAddress.fullAddress,
+                        }
+                        : null;
+
+                    response.pickupDate = pickupDate || null;
+                    response.pickupTime = pickupTime || null;
+
+                    response.deliveryDate = deliveryDate || null;
+                    response.deliveryTime = deliveryTime || null;
+                }
+
+                // ===============================================
+                // Appointment Response
+                // ===============================================
+
+                if (scheduleType === "appointment") {
+                    response.pickupAddress = pickupAddress
+                        ? {
+                            fullAddress: pickupAddress.fullAddress,
+                        }
+                        : null;
+
+                    response.appointmentDate = appointmentDate || null;
+                    response.appointmentTime = appointmentTime || null;
+                }
+
+                // ===============================================
+                // Final Response
+                // ===============================================
 
                 return ctx.send({
                     message: isNewCart
