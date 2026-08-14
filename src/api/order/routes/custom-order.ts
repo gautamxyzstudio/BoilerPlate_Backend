@@ -40,6 +40,13 @@ export default {
                 auth: {}
             },
         },
-        
+        {
+            method: "POST",
+            path: "/admin/create-order",
+            handler: "custom-order.adminCreate",
+            config: {
+                auth: {}
+            },
+        },
     ]
 }

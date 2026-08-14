@@ -1,6 +1,8 @@
 import type { Context } from "koa";
 import { getIO } from "../../../socket";
-
+import { createNotification } from "../../../utils/notification";
+import { sendOrderConfirmationEmail } from "../../../utils/sendOrderConfirmationEmail";
+import crypto from "crypto";
 export default {
 
     async getOrderStats(ctx: Context) {
@@ -185,17 +187,17 @@ export default {
             // Get paid orders from last 10 days
             // ============================================
 
-            const orders = await strapi.db
-                .query("api::order.order")
+            const payments = await strapi.db
+                .query("api::payment-collection.payment-collection")
                 .findMany({
                     where: {
-                        paymentStatus: "paid",
-                        createdAt: {
+                        payment_status: "paid",
+                        paymentDate: {
                             $gte: startDate,
                             $lt: endDate,
                         },
                     },
-                    select: ["grandTotal", "createdAt"],
+                    select: ["amount", "paymentDate"],
                 });
 
             // ============================================
@@ -222,12 +224,12 @@ export default {
             // Add paid order grandTotal to its date
             // ============================================
 
-            for (const order of orders) {
-                if (!order.createdAt) {
+            for (const payment of payments) {
+                if (!payment.paymentDate) {
                     continue;
                 }
 
-                const orderDate = new Date(order.createdAt);
+                const orderDate = new Date(payment.paymentDate);
 
                 const year = orderDate.getFullYear();
                 const month = String(orderDate.getMonth() + 1).padStart(2, "0");
@@ -236,7 +238,7 @@ export default {
                 const dateKey = `${year}-${month}-${day}`;
 
                 if (revenueByDate[dateKey] !== undefined) {
-                    revenueByDate[dateKey] += Number(order.grandTotal || 0);
+                    revenueByDate[dateKey] += Number(payment.amount || 0);
                 }
             }
 
@@ -448,50 +450,54 @@ export default {
 
             // =====================================================
             // Current 30-day paid revenue
+            // Based on paymentDate
             // =====================================================
 
-            const monthlyPaidOrders = await strapi.db
-                .query("api::order.order")
+            const monthlyPayments = await strapi.db
+                .query("api::payment-collection.payment-collection")
                 .findMany({
                     where: {
-                        paymentStatus: "paid",
-                        createdAt: {
+                        payment_status: "paid",
+                        paymentDate: {
                             $gte: monthlyStartDate,
                             $lt: monthlyEndDate,
                         },
                     },
-                    select: ["grandTotal"],
+                    select: ["amount"],
                 });
 
             let monthlyRevenue = 0;
 
-            for (const order of monthlyPaidOrders) {
-                monthlyRevenue += Number(order.grandTotal || 0);
+            for (const payment of monthlyPayments) {
+                monthlyRevenue += Number(payment.amount || 0);
             }
 
-            monthlyRevenue = Number(monthlyRevenue.toFixed(2));
+            monthlyRevenue = Number(
+                monthlyRevenue.toFixed(2)
+            );
 
             // =====================================================
             // Previous 30-day paid revenue
+            // Based on paymentDate
             // =====================================================
 
-            const previousMonthlyPaidOrders = await strapi.db
-                .query("api::order.order")
+            const previousMonthlyPayments = await strapi.db
+                .query("api::payment-collection.payment-collection")
                 .findMany({
                     where: {
-                        paymentStatus: "paid",
-                        createdAt: {
+                        payment_status: "paid",
+                        paymentDate: {
                             $gte: previousMonthlyStartDate,
                             $lt: previousMonthlyEndDate,
                         },
                     },
-                    select: ["grandTotal"],
+                    select: ["amount"],
                 });
 
             let previousMonthlyRevenue = 0;
 
-            for (const order of previousMonthlyPaidOrders) {
-                previousMonthlyRevenue += Number(order.grandTotal || 0);
+            for (const payment of previousMonthlyPayments) {
+                previousMonthlyRevenue += Number(payment.amount || 0);
             }
 
             previousMonthlyRevenue = Number(
@@ -503,7 +509,6 @@ export default {
                     monthlyRevenue,
                     previousMonthlyRevenue
                 );
-
             // =====================================================
             // 5. TOTAL CUSTOMERS
             // =====================================================
@@ -578,6 +583,806 @@ export default {
 
             return ctx.internalServerError(
                 "Unable to fetch dashboard statistics."
+            );
+        }
+    },
+
+    async adminCreate(ctx: Context) {
+        let trx: any = null;
+
+        try {
+            // ===============================================
+            // Logged-in Admin / Staff
+            // ===============================================
+
+            const adminUser = ctx.state.user;
+
+            if (!adminUser) {
+                return ctx.unauthorized("You must be logged in.");
+            }
+
+            // ===============================================
+            // Request Body
+            // SAME FIELDS AS USER CART LOGIC
+            // ===============================================
+
+            const body = ctx.request.body?.data || ctx.request.body || {};
+
+            const {
+                userProfile,
+
+                items = [],
+
+                pickup_address,
+                delivery_address,
+
+                pickupDate,
+                pickupTime,
+
+                deliveryDate,
+                deliveryTime,
+
+                appointmentDate,
+                appointmentTime,
+
+                specialInstructions,
+            } = body;
+
+            // ===============================================
+            // Validate Customer
+            // ===============================================
+
+            if (!userProfile) {
+                return ctx.badRequest(
+                    "Customer user profile is required."
+                );
+            }
+
+            const customerProfile: any = await strapi
+                .documents("api::user-profile.user-profile")
+                .findOne({
+                    documentId: userProfile,
+                });
+
+            if (!customerProfile) {
+                return ctx.badRequest(
+                    "Customer user profile not found."
+                );
+            }
+
+            // ===============================================
+            // Validate Items
+            // SAME AS CART LOGIC
+            // ===============================================
+
+            if (!items || !items.length) {
+                return ctx.badRequest(
+                    "At least one item is required."
+                );
+            }
+
+            // ===============================================
+            // Validate Duplicate Items
+            // ===============================================
+
+            const uniqueItems = new Set();
+
+            for (const item of items) {
+                const key = `${item.service}-${item.service_varient || "flat"}`;
+
+                if (uniqueItems.has(key)) {
+                    return ctx.badRequest(
+                        "Duplicate service/variant found. Please combine quantities."
+                    );
+                }
+
+                uniqueItems.add(key);
+            }
+
+            // ===============================================
+            // Validate Item Data
+            // ===============================================
+
+            for (const item of items) {
+                if (!item.service) {
+                    return ctx.badRequest(
+                        "Service is required for every order item."
+                    );
+                }
+
+                if (!item.quantity || Number(item.quantity) < 1) {
+                    return ctx.badRequest(
+                        "Quantity must be at least 1."
+                    );
+                }
+            }
+
+            // ===============================================
+            // Validate Pickup Address
+            // ===============================================
+
+            let pickupAddress: any = null;
+
+            if (pickup_address) {
+                pickupAddress = await strapi
+                    .documents("api::address.address")
+                    .findOne({
+                        documentId: pickup_address,
+                        populate: {
+                            user_profile: true,
+                        },
+                    });
+
+                if (!pickupAddress) {
+                    return ctx.badRequest(
+                        "Pickup address not found."
+                    );
+                }
+
+                if (
+                    pickupAddress.user_profile?.documentId !==
+                    customerProfile.documentId
+                ) {
+                    return ctx.forbidden(
+                        "Pickup address does not belong to the selected customer."
+                    );
+                }
+            }
+
+            // ===============================================
+            // Validate Delivery Address
+            // ===============================================
+
+            let deliveryAddress: any = null;
+
+            if (delivery_address) {
+                deliveryAddress = await strapi
+                    .documents("api::address.address")
+                    .findOne({
+                        documentId: delivery_address,
+                        populate: {
+                            user_profile: true,
+                        },
+                    });
+
+                if (!deliveryAddress) {
+                    return ctx.badRequest(
+                        "Delivery address not found."
+                    );
+                }
+
+                if (
+                    deliveryAddress.user_profile?.documentId !==
+                    customerProfile.documentId
+                ) {
+                    return ctx.forbidden(
+                        "Delivery address does not belong to the selected customer."
+                    );
+                }
+            }
+
+            // ===============================================
+            // Validate Services & Calculate Prices
+            // ===============================================
+
+            trx = await strapi.db.transaction();
+
+            let subTotal = 0;
+
+            const preparedOrderItems: any[] = [];
+
+            let scheduleType: string | null = null;
+
+            for (const item of items) {
+                // ===========================================
+                // Fetch Service
+                // ===========================================
+
+                const service: any = await strapi
+                    .documents("api::service.service")
+                    .findOne({
+                        documentId: item.service,
+                        populate: {
+                            service_pricings: true,
+                            service_varients: {
+                                populate: {
+                                    service_pricings: true,
+                                },
+                            },
+                        },
+                    });
+
+                if (!service) {
+                    throw new Error("Service not found.");
+                }
+
+                if (!scheduleType) {
+                    scheduleType = service.scheduleType;
+                }
+
+                let pricing: any = null;
+                let variant: any = null;
+
+                // ===========================================
+                // Flat Pricing
+                // ===========================================
+
+                if (service.pricingModel === "flat") {
+                    pricing = service.service_pricings?.[0];
+
+                    if (!pricing) {
+                        throw new Error(
+                            `Pricing not found for service "${service.name}".`
+                        );
+                    }
+                }
+
+                // ===========================================
+                // Variant Pricing
+                // ===========================================
+
+                else if (service.pricingModel === "variant") {
+                    if (!item.service_varient) {
+                        throw new Error(
+                            `Variant is required for service "${service.name}".`
+                        );
+                    }
+
+                    variant = service.service_varients?.find(
+                        (v: any) =>
+                            v.documentId === item.service_varient
+                    );
+
+                    if (!variant) {
+                        throw new Error(
+                            `Variant not found for service "${service.name}".`
+                        );
+                    }
+
+                    pricing = variant.service_pricings?.[0];
+
+                    if (!pricing) {
+                        throw new Error(
+                            `Pricing not found for variant "${variant.name}".`
+                        );
+                    }
+                } else {
+                    throw new Error("Invalid pricing model.");
+                }
+
+                // ===========================================
+                // Determine Effective Price
+                // ===========================================
+
+                if (pricing.price == null) {
+                    throw new Error(
+                        `Price not configured for "${service.name}".`
+                    );
+                }
+
+                const unitPrice = Number(pricing.price);
+
+                if (
+                    pricing.offerPrice != null &&
+                    Number(pricing.offerPrice) > unitPrice
+                ) {
+                    throw new Error(
+                        `Offer price cannot be greater than regular price for "${service.name}".`
+                    );
+                }
+
+                const offerPrice =
+                    pricing.offerPrice !== null &&
+                        pricing.offerPrice !== undefined
+                        ? Number(pricing.offerPrice)
+                        : null;
+
+                const effectivePrice =
+                    offerPrice !== null
+                        ? offerPrice
+                        : unitPrice;
+
+                const expressDeliveryPrice = Number(
+                    pricing.expressDeliveryPrice || 0
+                );
+
+                const quantity = Number(item.quantity);
+
+                // ===========================================
+                // Calculate Item Total
+                // ===========================================
+
+                let itemTotal =
+                    effectivePrice * quantity;
+
+                if (item.expressDelivery) {
+                    itemTotal +=
+                        expressDeliveryPrice * quantity;
+                }
+
+                itemTotal = Number(
+                    itemTotal.toFixed(2)
+                );
+
+                subTotal += itemTotal;
+
+                // ===========================================
+                // Prepare Order Item
+                // ===========================================
+
+                preparedOrderItems.push({
+                    service: service.documentId,
+
+                    serviceName: service.name,
+
+                    service_varient:
+                        variant?.documentId || null,
+
+                    variantName:
+                        variant?.name || null,
+
+                    service_pricing:
+                        pricing.documentId,
+
+                    quantity,
+
+                    unitPrice,
+
+                    offerPrice,
+
+                    expressDelivery:
+                        !!item.expressDelivery,
+
+                    expressDeliveryPrice:
+                        item.expressDelivery
+                            ? expressDeliveryPrice
+                            : 0,
+
+                    totalPrice: itemTotal,
+
+                    remarks:
+                        item.remarks || null,
+                });
+            }
+
+            // ===============================================
+            // Validate Schedule
+            // ===============================================
+
+            if (scheduleType === "pickup_delivery") {
+                if (!pickup_address) {
+                    throw new Error(
+                        "Pickup address is required."
+                    );
+                }
+
+                if (!delivery_address) {
+                    throw new Error(
+                        "Delivery address is required."
+                    );
+                }
+
+                if (!pickupDate) {
+                    throw new Error(
+                        "Pickup date is required."
+                    );
+                }
+
+                if (!pickupTime) {
+                    throw new Error(
+                        "Pickup time is required."
+                    );
+                }
+
+                if (!deliveryDate) {
+                    throw new Error(
+                        "Delivery date is required."
+                    );
+                }
+
+                if (!deliveryTime) {
+                    throw new Error(
+                        "Delivery time is required."
+                    );
+                }
+            }
+
+            if (scheduleType === "appointment") {
+                if (!pickup_address) {
+                    throw new Error(
+                        "Pickup address is required."
+                    );
+                }
+
+                if (!appointmentDate) {
+                    throw new Error(
+                        "Appointment date is required."
+                    );
+                }
+
+                if (!appointmentTime) {
+                    throw new Error(
+                        "Appointment time is required."
+                    );
+                }
+            }
+
+            // ===============================================
+            // Calculate Totals
+            // ===============================================
+
+            const tax = 0;
+            const discount = 0;
+            const deliveryCharge = 0;
+
+            const grandTotal = Number(
+                (
+                    subTotal +
+                    tax +
+                    deliveryCharge -
+                    discount
+                ).toFixed(2)
+            );
+
+            // ===============================================
+            // Generate Order Number
+            // ===============================================
+
+            const year = new Date()
+                .getFullYear()
+                .toString()
+                .slice(-2);
+
+            let orderNo = "";
+            let exists = true;
+
+            while (exists) {
+                const randomCode = crypto
+                    .randomBytes(3)
+                    .toString("hex")
+                    .toUpperCase();
+
+                orderNo = `ORD${year}-${randomCode}`;
+
+                const existingOrder = await strapi.db
+                    .query("api::order.order")
+                    .findOne({
+                        where: {
+                            orderNo,
+                        },
+                        select: ["id"],
+                    });
+
+                exists = !!existingOrder;
+            }
+
+            // ===============================================
+            // Create Order
+            // ===============================================
+
+            const createdOrder = await strapi
+                .documents("api::order.order")
+                .create({
+                    data: {
+                        orderNo,
+
+                        // ===================================
+                        // Schedule
+                        // ===================================
+
+                        pickupDate:
+                            pickupDate || null,
+
+                        pickupTime:
+                            pickupTime || null,
+
+                        deliveryDate:
+                            deliveryDate || null,
+
+                        deliveryTime:
+                            deliveryTime || null,
+
+                        appointmentDate:
+                            appointmentDate || null,
+
+                        appointmentTime:
+                            appointmentTime || null,
+
+                        // ===================================
+                        // COD ONLY
+                        // ===================================
+
+                        paymentMethod: "cod",
+                        paymentStatus: "pending",
+                        orderStatus: "pending",
+
+                        // ===================================
+                        // Calculated Totals
+                        // ===================================
+
+                        subTotal,
+                        tax,
+                        discount,
+                        deliveryCharge,
+                        grandTotal,
+
+                        specialInstruction:
+                            specialInstructions || null,
+
+                        // ===================================
+                        // Addresses
+                        // ===================================
+
+                        pickup_address:
+                            pickupAddress?.documentId || null,
+
+                        delivery_address:
+                            deliveryAddress?.documentId || null,
+
+                        // ===================================
+                        // Customer
+                        // ===================================
+
+                        user_profile:
+                            customerProfile.documentId,
+                    },
+
+                    transaction: trx,
+                });
+
+            // ===============================================
+            // Create Order Items
+            // ===============================================
+
+            for (const item of preparedOrderItems) {
+                await strapi
+                    .documents(
+                        "api::order-item.order-item"
+                    )
+                    .create({
+                        data: {
+                            order:
+                                createdOrder.documentId,
+
+                            service:
+                                item.service,
+
+                            service_varient:
+                                item.service_varient,
+
+                            service_pricing:
+                                item.service_pricing,
+
+                            quantity:
+                                item.quantity,
+
+                            unitPrice:
+                                item.unitPrice,
+
+                            offerPrice:
+                                item.offerPrice,
+
+                            expressDelivery:
+                                item.expressDelivery,
+
+                            expressDeliveryPrice:
+                                item.expressDeliveryPrice,
+
+                            totalPrice:
+                                item.totalPrice,
+
+                            remarks:
+                                item.remarks,
+                        },
+
+                        transaction: trx,
+                    });
+            }
+
+            // ===============================================
+            // Create Payment Collection
+            // ===============================================
+
+            await strapi
+                .documents(
+                    "api::payment-collection.payment-collection"
+                )
+                .create({
+                    data: {
+                        order:
+                            createdOrder.documentId,
+
+                        amount: grandTotal,
+
+                        payment_status:
+                            "pending",
+                    },
+
+                    transaction: trx,
+                });
+
+            // ===============================================
+            // Create Initial Status History
+            // ===============================================
+
+            await strapi
+                .documents(
+                    "api::order-status-history.order-status-history"
+                )
+                .create({
+                    data: {
+                        order:
+                            createdOrder.documentId,
+
+                        statusUpdatedTo:
+                            "pending",
+
+                        status_updated_by:
+                            adminUser.documentId,
+
+                        updatedByType:
+                            "admin",
+                    },
+
+                    transaction: trx,
+                });
+
+
+            // ===============================================
+            // Commit Transaction
+            // ===============================================
+
+            await trx.commit();
+            trx = null;
+
+            // ===============================================
+            // Prepare Response
+            // ===============================================
+
+            const response = {
+                message: "Order created successfully.",
+                documentId: createdOrder.documentId,
+                orderNo,
+            };
+
+            // ===============================================
+            // Background Tasks
+            // ===============================================
+
+            setImmediate(async () => {
+
+                // ==========================================
+                // 1. Send Email To Customer
+                // ==========================================
+
+                try {
+                    const emailItems =
+                        preparedOrderItems.map(
+                            (item: any) => ({
+                                serviceName:
+                                    item.serviceName,
+
+                                variantName:
+                                    item.variantName,
+
+                                quantity:
+                                    item.quantity,
+
+                                totalPrice:
+                                    item.totalPrice,
+                            })
+                        );
+
+                    await sendOrderConfirmationEmail(
+                        customerProfile.email,
+                        customerProfile.fullName,
+                        orderNo,
+                        grandTotal,
+                        "cod",
+                        emailItems
+                    );
+                } catch (emailError) {
+                    strapi.log.error(
+                        `Order ${orderNo} email failed:`,
+                        emailError
+                    );
+                }
+
+                // ==========================================
+                // 2. Create Notification
+                // ==========================================
+
+                try {
+                    await createNotification({
+                        strapi,
+
+                        title:
+                            "New Order Received",
+
+                        description:
+                            `New order ${orderNo} has been received.`,
+
+                        type: "order",
+                    });
+                } catch (notificationError) {
+                    strapi.log.error(
+                        `Order ${orderNo} notification failed:`,
+                        notificationError
+                    );
+                }
+
+                // ==========================================
+                // 3. Emit Socket
+                // ==========================================
+
+                try {
+                    const order = await strapi
+                        .documents("api::order.order")
+                        .findOne({
+                            documentId:
+                                createdOrder.documentId,
+
+                            populate: {
+                                pickup_address: true,
+                                delivery_address: true,
+                                user_profile: true,
+
+                                order_items: {
+                                    populate: {
+                                        service: true,
+                                        service_varient: true,
+                                        service_pricing: true,
+                                    },
+                                },
+                            },
+                        });
+
+                    const io = getIO();
+
+                    io.to("admin-orders").emit(
+                        "order-created",
+                        {
+                            order,
+                        }
+                    );
+                } catch (socketError) {
+                    strapi.log.error(
+                        `Order ${orderNo} socket emission failed:`,
+                        socketError
+                    );
+                }
+            });
+
+            // ===============================================
+            // Final Response
+            // ===============================================
+
+            return ctx.send(response);
+
+        } catch (error: any) {
+            // ===============================================
+            // Rollback
+            // ===============================================
+
+            if (trx) {
+                try {
+                    await trx.rollback();
+                } catch (rollbackError) {
+                    strapi.log.error(
+                        "Admin order rollback failed:",
+                        rollbackError
+                    );
+                }
+            }
+
+            strapi.log.error(
+                "Admin Create Order Error:",
+                error
+            );
+
+            return ctx.badRequest(
+                error?.message ||
+                "Failed to create order."
             );
         }
     },
