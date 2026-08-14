@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2026-08-14T07:28:25.707Z"
+    "x-generation-date": "2026-08-14T06:56:51.573Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -13029,9 +13029,6 @@
                                       }
                                     }
                                   },
-                                  "isRead": {
-                                    "type": "boolean"
-                                  },
                                   "readAt": {
                                     "type": "string",
                                     "format": "date-time"
@@ -20469,9 +20466,6 @@
                                       }
                                     }
                                   },
-                                  "isRead": {
-                                    "type": "boolean"
-                                  },
                                   "readAt": {
                                     "type": "string",
                                     "format": "date-time"
@@ -24292,9 +24286,6 @@
                                                                     }
                                                                   }
                                                                 }
-                                                              },
-                                                              "isRead": {
-                                                                "type": "boolean"
                                                               },
                                                               "readAt": {
                                                                 "type": "string",
@@ -28833,9 +28824,6 @@
                                                   }
                                                 }
                                               }
-                                            },
-                                            "isRead": {
-                                              "type": "boolean"
                                             },
                                             "readAt": {
                                               "type": "string",
@@ -34173,9 +34161,6 @@
                                             }
                                           }
                                         }
-                                      },
-                                      "isRead": {
-                                        "type": "boolean"
                                       },
                                       "readAt": {
                                         "type": "string",
@@ -41680,9 +41665,6 @@
                     }
                   }
                 },
-                "isRead": {
-                  "type": "boolean"
-                },
                 "readAt": {
                   "type": "string",
                   "format": "date-time"
@@ -41877,9 +41859,6 @@
                   }
                 ],
                 "example": "string or id"
-              },
-              "isRead": {
-                "type": "boolean"
               },
               "readAt": {
                 "type": "string",
@@ -46652,9 +46631,6 @@
                         }
                       }
                     },
-                    "isRead": {
-                      "type": "boolean"
-                    },
                     "readAt": {
                       "type": "string",
                       "format": "date-time"
@@ -46825,9 +46801,6 @@
                 "type": "string"
               }
             }
-          },
-          "isRead": {
-            "type": "boolean"
           },
           "readAt": {
             "type": "string",
@@ -49324,9 +49297,6 @@
                                         }
                                       }
                                     }
-                                  },
-                                  "isRead": {
-                                    "type": "boolean"
                                   },
                                   "readAt": {
                                     "type": "string",
@@ -54560,9 +54530,6 @@
                                     }
                                   }
                                 },
-                                "isRead": {
-                                  "type": "boolean"
-                                },
                                 "readAt": {
                                   "type": "string",
                                   "format": "date-time"
@@ -59709,9 +59676,6 @@
                                     }
                                   }
                                 },
-                                "isRead": {
-                                  "type": "boolean"
-                                },
                                 "readAt": {
                                   "type": "string",
                                   "format": "date-time"
@@ -64817,9 +64781,6 @@
                                       }
                                     }
                                   }
-                                },
-                                "isRead": {
-                                  "type": "boolean"
                                 },
                                 "readAt": {
                                   "type": "string",
@@ -72936,9 +72897,6 @@
                                                               }
                                                             }
                                                           },
-                                                          "isRead": {
-                                                            "type": "boolean"
-                                                          },
                                                           "readAt": {
                                                             "type": "string",
                                                             "format": "date-time"
@@ -78348,9 +78306,6 @@
                                                           }
                                                         }
                                                       },
-                                                      "isRead": {
-                                                        "type": "boolean"
-                                                      },
                                                       "readAt": {
                                                         "type": "string",
                                                         "format": "date-time"
@@ -83451,9 +83406,6 @@
                                                           }
                                                         }
                                                       }
-                                                    },
-                                                    "isRead": {
-                                                      "type": "boolean"
                                                     },
                                                     "readAt": {
                                                       "type": "string",
@@ -88794,9 +88746,6 @@
                                                           }
                                                         }
                                                       }
-                                                    },
-                                                    "isRead": {
-                                                      "type": "boolean"
                                                     },
                                                     "readAt": {
                                                       "type": "string",
@@ -96064,9 +96013,6 @@
                           }
                         }
                       }
-                    },
-                    "isRead": {
-                      "type": "boolean"
                     },
                     "readAt": {
                       "type": "string",

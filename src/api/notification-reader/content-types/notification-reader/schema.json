@@ -23,10 +23,6 @@
       "target": "api::notification.notification",
       "inversedBy": "notification_readers"
     },
-    "isRead": {
-      "type": "boolean",
-      "default": false
-    },
     "readAt": {
       "type": "datetime"
     }
