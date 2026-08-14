@@ -223,13 +223,6 @@ export default factories.createCoreService(
             // Create Status History
             // ===============================================
 
-            console.log("🔥 CREATING STATUS HISTORY:", {
-                orderDocumentId,
-                orderStatus,
-                userId: loggedInUser?.documentId,
-                time: new Date().toISOString(),
-            });
-
             await strapi
                 .documents(
                     "api::order-status-history.order-status-history" as any

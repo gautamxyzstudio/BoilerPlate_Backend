@@ -218,12 +218,6 @@ export const initSocket = (
             "update-order",
             async (data) => {
 
-                console.log("🔥 UPDATE-ORDER SOCKET RECEIVED:", {
-                    socketId: socket.id,
-                    orderDocumentId: data?.orderDocumentId,
-                    orderStatus: data?.orderStatus,
-                    time: new Date().toISOString(),
-                });
                 try {
 
                     const {

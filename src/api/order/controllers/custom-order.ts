@@ -370,48 +370,46 @@ export default {
             // Only paid orders
             // =====================================================
 
-            const todayPaidOrders = await strapi.db
-                .query("api::order.order")
+            const todayPayments = await strapi.db
+                .query("api::payment-collection.payment-collection")
                 .findMany({
                     where: {
-                        paymentStatus: "paid",
-                        createdAt: {
+                        payment_status: "paid",
+                        paymentDate: {
                             $gte: startOfToday,
                             $lt: startOfTomorrow,
                         },
                     },
-                    select: ["grandTotal"],
+                    select: ["amount"],
                 });
 
             let todayRevenue = 0;
 
-            for (const order of todayPaidOrders) {
-                todayRevenue += Number(order.grandTotal || 0);
+            for (const payment of todayPayments) {
+                todayRevenue += Number(payment.amount || 0);
             }
 
             todayRevenue = Number(todayRevenue.toFixed(2));
-
             // =====================================================
             // Yesterday's revenue
             // =====================================================
-
-            const yesterdayPaidOrders = await strapi.db
-                .query("api::order.order")
+            const yesterdayPayments = await strapi.db
+                .query("api::payment-collection.payment-collection")
                 .findMany({
                     where: {
-                        paymentStatus: "paid",
-                        createdAt: {
+                        payment_status: "paid",
+                        paymentDate: {
                             $gte: startOfYesterday,
                             $lt: startOfToday,
                         },
                     },
-                    select: ["grandTotal"],
+                    select: ["amount"],
                 });
 
             let yesterdayRevenue = 0;
 
-            for (const order of yesterdayPaidOrders) {
-                yesterdayRevenue += Number(order.grandTotal || 0);
+            for (const payment of yesterdayPayments) {
+                yesterdayRevenue += Number(payment.amount || 0);
             }
 
             yesterdayRevenue = Number(yesterdayRevenue.toFixed(2));
