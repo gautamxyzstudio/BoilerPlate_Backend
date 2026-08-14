@@ -1216,6 +1216,13 @@ export default factories.createCoreController(
                             orderStatus:
                                 order.orderStatus,
 
+                            expressDelivery: (
+                                order.order_items || []
+                            ).every(
+                                (item: any) =>
+                                    item.expressDelivery === true
+                            ),
+
                             orderItems:
                                 (order.order_items || []).map(
                                     (item: any) => ({
@@ -1325,6 +1332,13 @@ export default factories.createCoreController(
 
                                 createdAt:
                                     order.createdAt,
+
+                                expressDelivery: (
+                                    order.order_items || []
+                                ).every(
+                                    (item: any) =>
+                                        item.expressDelivery === true
+                                ),
 
                                 paymentStatus:
                                     order.paymentStatus,
@@ -1614,7 +1628,9 @@ export default factories.createCoreController(
                         orderStatus: order.orderStatus,
                         grandTotal: order.grandTotal,
                         specialInstruction: order.specialInstruction,
-
+                        expressDelivery: (order.order_items || []).every(
+                            (item: any) => item.expressDelivery === true
+                        ),
                         pickup_address: order.pickup_address
                             ? {
                                 fullAddress: order.pickup_address.fullAddress,
@@ -1679,7 +1695,14 @@ export default factories.createCoreController(
                 // ===============================================
 
                 return ctx.send({
-                    data: order,
+                    data: {
+                        ...order,
+
+                        expressDelivery: (order.order_items || []).every(
+                            (item: any) =>
+                                item.expressDelivery === true
+                        ),
+                    },
                 });
             } catch (error: any) {
                 strapi.log.error("Find Order Error:", error);
