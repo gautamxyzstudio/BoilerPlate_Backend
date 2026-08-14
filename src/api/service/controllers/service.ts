@@ -952,7 +952,7 @@ export default factories.createCoreController(
                     imageUrl: response.image?.url || null,
                     scheduleType: response.scheduleType,
                     isActive: response.isActive,
-                    
+
 
                     service_category: response.service_category
                         ? {
@@ -1000,6 +1000,95 @@ export default factories.createCoreController(
                     error?.message || "Failed to fetch service."
                 );
             }
+        },
+
+        async getServicesWithVariants(ctx) {
+            try {
+                const services = await strapi.db
+                    .query("api::service.service")
+                    .findMany({
+                        where: {
+                            isActive: true,
+                        },
+                        populate: {
+                            service_varients: {
+                                where: {
+                                    isActive: true,
+                                },
+                                populate: {
+                                    service_pricings: {
+                                        where: {
+                                            isActive: true,
+                                        },
+                                        select: [
+                                            "price",
+                                            "offerPrice",
+                                        ],
+                                    },
+                                },
+                            },
+                        },
+                        select: [
+                            "documentId",
+                            "name",
+                        ],
+                        orderBy: {
+                            displayOrder: "asc",
+                        },
+                    });
+
+                const data = services.map((service: any) => ({
+                    documentId: service.documentId,
+                    name: service.name,
+
+                    varients: (service.service_varients || []).map(
+                        (variant: any) => {
+                            const pricing =
+                                variant.service_pricings?.[0] || null;
+
+                            return {
+                                documentId:
+                                    variant.documentId,
+
+                                name:
+                                    variant.name,
+
+                                pricing: pricing
+                                    ? {
+                                        price: Number(
+                                            pricing.price
+                                        ),
+
+                                        offerPrice:
+                                            pricing.offerPrice !==
+                                                null &&
+                                                pricing.offerPrice !==
+                                                undefined
+                                                ? Number(
+                                                    pricing.offerPrice
+                                                )
+                                                : null,
+                                    }
+                                    : null,
+                            };
+                        }
+                    ),
+                }));
+
+                return ctx.send({
+                    data,
+                });
+            } catch (error) {
+                console.error(
+                    "Get services with variants error:",
+                    error
+                );
+
+                return ctx.internalServerError(
+                    "Unable to fetch services."
+                );
+            }
         }
+
     })
 );

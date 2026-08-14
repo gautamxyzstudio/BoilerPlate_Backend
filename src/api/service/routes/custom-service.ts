@@ -8,5 +8,13 @@ export default {
                 auth: {},
             },
         },
+        {
+            method: "GET",
+            path: "/admin/services-with-variants",
+            handler: "service.getServicesWithVariants",
+            config: {
+                auth: {},
+            },
+        },
     ],
 };
