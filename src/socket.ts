@@ -16,10 +16,10 @@ export const initSocket = (
 
     io.on("connection", async (socket) => {
 
-        console.log(
-            "Socket Connected:",
-            socket.id
-        );
+        // console.log(
+        //     "Socket Connected:",
+        //     socket.id
+        // );
 
         // ===============================================
         // Socket Authentication
@@ -104,13 +104,13 @@ export const initSocket = (
 
             socket.data.user = user;
 
-            console.log(
-                `Socket authenticated: ${user.email}`
-            );
+            // console.log(
+            //     `Socket authenticated: ${user.email}`
+            // );
 
-            console.log(
-                `Socket user role: ${user.role?.name}`
-            );
+            // console.log(
+            //     `Socket user role: ${user.role?.name}`
+            // );
 
             // ===============================================
             // Normalize User Role
@@ -120,9 +120,9 @@ export const initSocket = (
                 .replace(/\s+/g, "")
                 .toLowerCase();
 
-            console.log(
-                `Normalized socket user role: ${roleName}`
-            );
+            // console.log(
+            //     `Normalized socket user role: ${roleName}`
+            // );
 
             // ===============================================
             // Join Admin Notification Room
@@ -137,15 +137,15 @@ export const initSocket = (
                 socket.join("admin-orders");
                 socket.join("admin-users");
 
-                console.log(
-                    `Socket ${socket.id} joined admin-notifications`
-                );
-                console.log(
-                    `Socket ${socket.id} joined admin-orders`
-                );
-                console.log(
-                    `Socket ${socket.id} joined admin-users`
-                );
+                // console.log(
+                //     `Socket ${socket.id} joined admin-notifications`
+                // );
+                // console.log(
+                //     `Socket ${socket.id} joined admin-orders`
+                // );
+                // console.log(
+                //     `Socket ${socket.id} joined admin-users`
+                // );
             }
 
             // ===============================================
@@ -186,9 +186,9 @@ export const initSocket = (
                     `order-${orderDocumentId}`
                 );
 
-                console.log(
-                    `Socket ${socket.id} joined order-${orderDocumentId}`
-                );
+                // console.log(
+                //     `Socket ${socket.id} joined order-${orderDocumentId}`
+                // );
             }
         );
 
@@ -204,9 +204,9 @@ export const initSocket = (
                     `order-${orderDocumentId}`
                 );
 
-                console.log(
-                    `Socket ${socket.id} left order-${orderDocumentId}`
-                );
+                // console.log(
+                //     `Socket ${socket.id} left order-${orderDocumentId}`
+                // );
             }
         );
 
@@ -218,6 +218,12 @@ export const initSocket = (
             "update-order",
             async (data) => {
 
+                console.log("🔥 UPDATE-ORDER SOCKET RECEIVED:", {
+                    socketId: socket.id,
+                    orderDocumentId: data?.orderDocumentId,
+                    orderStatus: data?.orderStatus,
+                    time: new Date().toISOString(),
+                });
                 try {
 
                     const {
@@ -1129,10 +1135,10 @@ export const initSocket = (
 
         socket.on("disconnect", () => {
 
-            console.log(
-                "Socket Disconnected:",
-                socket.id
-            );
+            // console.log(
+            //     "Socket Disconnected:",
+            //     socket.id
+            // );
 
         });
 
