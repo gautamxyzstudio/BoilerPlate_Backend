@@ -153,25 +153,17 @@ export default factories.createCoreController(
 
         const io = getIO();
 
-        console.log(
-          "EMITTING NEW USER PROFILE TO ADMIN-USERS:",
-          {
-            profileDocumentId: profile.documentId,
-            customerId: profile.customerId,
-            fullName: profile.fullName,
-          }
-        );
+        console.log("EMITTING NEW USER PROFILE TO ADMIN-USERS:", {
+          profileDocumentId: profile.documentId,
+          customerId: profile.customerId,
+          fullName: profile.fullName,
+        });
 
-        io.to("admin-users").emit(
-          "user-profile-created",
-          {
-            profile,
-          }
-        );
+        io.to("admin-users").emit("user-profile-created", {
+          profile,
+        });
 
-        console.log(
-          "NEW USER PROFILE EVENT EMITTED"
-        );
+        console.log("NEW USER PROFILE EVENT EMITTED");
 
         // ==========================================
         // Create Notification
@@ -219,10 +211,10 @@ export default factories.createCoreController(
         const whereClause = isAdmin
           ? {}
           : {
-            users_permissions_user: {
-              id: user.id,
-            },
-          };
+              users_permissions_user: {
+                id: user.id,
+              },
+            };
 
         const profiles = await strapi.db
           .query("api::user-profile.user-profile")
@@ -241,18 +233,20 @@ export default factories.createCoreController(
         const profilesWithStats = await Promise.all(
           profiles.map(async (profile) => {
             // Get orders of this user
-            const orders = await strapi.db
-              .query("api::order.order")
-              .findMany({
-                where: {
-                  user_profile: {
-                    id: profile.id,
-                  },
+            const orders = await strapi.db.query("api::order.order").findMany({
+              where: {
+                user_profile: {
+                  id: profile.id,
                 },
-                select: ["id"],
-              });
+              },
+              select: ["id", "createdAt"],
+              orderBy: {
+                createdAt: "desc",
+              },
+            });
 
             const totalOrders = orders.length;
+            const lastOrder = orders.length > 0 ? orders[0].createdAt : null;
 
             let totalSpend = 0;
 
@@ -278,8 +272,9 @@ export default factories.createCoreController(
               ...profile,
               totalOrders,
               totalSpend,
+              lastOrder,
             };
-          })
+          }),
         );
 
         return ctx.send({
