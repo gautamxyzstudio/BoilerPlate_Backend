@@ -11,11 +11,6 @@ export const initSocket = (httpServer: any, strapi: any) => {
   });
 
   io.on("connection", async (socket) => {
-    // console.log(
-    //     "Socket Connected:",
-    //     socket.id
-    // );
-
     // ===============================================
     // Socket Authentication
     // ===============================================
