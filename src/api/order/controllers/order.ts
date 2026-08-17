@@ -1216,6 +1216,9 @@ export default factories.createCoreController(
                             orderStatus:
                                 order.orderStatus,
 
+                            deliveredAt:
+                                order.deliveredAt,
+
                             expressDelivery: (
                                 order.order_items || []
                             ).every(
@@ -1623,6 +1626,7 @@ export default factories.createCoreController(
                         pickupTime: order.pickupTime,
                         deliveryDate: order.deliveryDate,
                         deliveryTime: order.deliveryTime,
+                        deliveredAt:order.deliveredAt,
                         paymentMethod: order.paymentMethod,
                         paymentStatus: order.paymentStatus,
                         orderStatus: order.orderStatus,
