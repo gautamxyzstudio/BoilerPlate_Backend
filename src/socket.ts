@@ -545,7 +545,7 @@ export const initSocket = (httpServer: any, strapi: any) => {
         // Emit Full Order To Admin / Staff
         // ===========================================
 
-        io.to("admin-orders").emit("order-updated", {
+        socket.to("admin-orders").emit("order-updated", {
           order: updatedOrder,
           status: statusResult,
         });
@@ -738,7 +738,7 @@ export const initSocket = (httpServer: any, strapi: any) => {
         // 11. Inform Admin / Staff
         // ===========================================
 
-        io.to("admin-orders").emit("order-updated", {
+        socket.to("admin-orders").emit("order-updated", {
           order: updatedOrder,
           status: null,
         });
