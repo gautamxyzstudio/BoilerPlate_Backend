@@ -283,6 +283,7 @@ export default factories.createCoreController(
           displayOrder,
           pricingModel,
           scheduleType,
+          isActive,
 
           // Flat Pricing
           price,
@@ -370,6 +371,7 @@ export default factories.createCoreController(
             ...(description !== undefined && {
               description,
             }),
+            ...(isActive !== undefined && { isActive }),
             ...(image !== undefined && { image }),
             ...(service_category !== undefined && {
               service_category,
@@ -691,35 +693,32 @@ export default factories.createCoreController(
         await trx.commit();
 
         // ===========================
-        // Populate Response
+        // Collect Updated Fields
         // ===========================
 
-        const populate =
-          finalPricingModel === "flat"
-            ? {
-                image: true,
-                service_category: true,
-                service_pricings: true,
-              }
-            : {
-                image: true,
-                service_category: true,
-                service_varients: {
-                  populate: {
-                    image: true,
-                    service_pricings: true,
-                  },
-                },
-              };
+        const updatedFields: string[] = [];
 
-        const updatedService = await strapi.documents(uid).findOne({
-          documentId: existingService.documentId,
-          populate,
-        });
+        if (name !== undefined) updatedFields.push("name");
+        if (description !== undefined) updatedFields.push("description");
+        if (isActive !== undefined) updatedFields.push("isActive");
+        if (image !== undefined) updatedFields.push("image");
+        if (service_category !== undefined)
+          updatedFields.push("service_category");
+        if (estimatedDuration !== undefined)
+          updatedFields.push("estimatedDuration");
+        if (displayOrder !== undefined) updatedFields.push("displayOrder");
+        if (pricingModel !== undefined) updatedFields.push("pricingModel");
+        if (scheduleType !== undefined) updatedFields.push("scheduleType");
+        if (price !== undefined) updatedFields.push("price");
+        if (offerPrice !== undefined) updatedFields.push("offerPrice");
+        if (expressDeliveryPrice !== undefined)
+          updatedFields.push("expressDeliveryPrice");
+        if (Array.isArray(variants) && variants.length > 0)
+          updatedFields.push("variants");
 
         return ctx.send({
           message: "Service updated successfully.",
-          data: updatedService,
+          updatedFields,
         });
       } catch (error) {
         await trx.rollback();
@@ -919,38 +918,31 @@ export default factories.createCoreController(
         const services = await strapi.db
           .query("api::service.service")
           .findMany({
-            where: {
-              isActive: true,
-            },
             populate: {
               service_varients: {
-                where: {
-                  isActive: true,
-                },
                 populate: {
                   service_pricings: {
-                    where: {
-                      isActive: true,
-                    },
                     select: ["price", "offerPrice", "expressDeliveryPrice"],
                   },
                 },
               },
             },
-            select: ["documentId", "name"],
+            select: ["documentId", "name", "isActive"],
             orderBy: {
-              displayOrder: "asc",
+              documentId: "desc",
             },
           });
 
         const data = services.map((service: any) => ({
           documentId: service.documentId,
           name: service.name,
+          isActive: service.isActive,
           varients: (service.service_varients || []).map((variant: any) => {
             const pricing = variant.service_pricings?.[0] || null;
             return {
               documentId: variant.documentId,
               name: variant.name,
+              isActive: variant.isActive,
               expressDeliveryAvailable: variant.expressDeliveryAvailable,
               pricing: pricing
                 ? {
@@ -959,6 +951,11 @@ export default factories.createCoreController(
                       pricing.offerPrice !== null &&
                       pricing.offerPrice !== undefined
                         ? Number(pricing.offerPrice)
+                        : null,
+                    expressDeliveryPrice:
+                      pricing.expressDeliveryPrice !== null &&
+                      pricing.expressDeliveryPrice !== undefined
+                        ? Number(pricing.expressDeliveryPrice)
                         : null,
                   }
                 : null,
