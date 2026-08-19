@@ -915,21 +915,110 @@ export default factories.createCoreController(
 
     async getServicesWithVariants(ctx) {
       try {
-        const services = await strapi.db
-          .query("api::service.service")
-          .findMany({
-            populate: {
-              service_varients: {
-                populate: {
-                  service_pricings: {
-                    select: ["price", "offerPrice", "expressDeliveryPrice"],
+        const user = ctx.state.user;
+        let roleName = user?.role?.name;
+
+        if (user?.documentId && !roleName) {
+          const userWithRole = await strapi
+            .documents("plugin::users-permissions.user")
+            .findOne({
+              documentId: user.documentId,
+              populate: { role: true },
+            });
+          roleName = userWithRole?.role?.name;
+        }
+
+        const normalizedRole = (roleName || "").toLowerCase();
+        const isAdmin =
+          normalizedRole === "admin" || normalizedRole === "superadmin";
+
+        const categoryParam = (
+          ctx.query?.category ||
+          ctx.query?.service_category ||
+          ctx.query?.categoryName
+        )
+          ?.toString()
+          ?.trim();
+
+        const categoryWhere = categoryParam
+          ? {
+              service_category: {
+                $or: [
+                  { documentId: categoryParam },
+                  { name: { $eqi: categoryParam } },
+                ],
+              },
+            }
+          : {};
+
+        if (isAdmin) {
+          const services = await strapi.db
+            .query("api::service.service")
+            .findMany({
+              where: {
+                ...categoryWhere,
+              },
+              populate: {
+                service_varients: {
+                  populate: {
+                    service_pricings: {
+                      select: ["price", "offerPrice", "expressDeliveryPrice"],
+                    },
                   },
                 },
               },
+              select: ["documentId", "name", "isActive"],
+              orderBy: {
+                documentId: "asc",
+              },
+            });
+
+          const data = services.map((service: any) => ({
+            documentId: service.documentId,
+            name: service.name,
+            isActive: service.isActive,
+            varients: (service.service_varients || []).map((variant: any) => {
+              const pricing = variant.service_pricings?.[0] || null;
+              return {
+                documentId: variant.documentId,
+                name: variant.name,
+                isActive: variant.isActive,
+                expressDeliveryAvailable: variant.expressDeliveryAvailable,
+                pricing: pricing
+                  ? {
+                      price: Number(pricing.price),
+                      offerPrice:
+                        pricing.offerPrice !== null &&
+                        pricing.offerPrice !== undefined
+                          ? Number(pricing.offerPrice)
+                          : null,
+                      expressDeliveryPrice:
+                        pricing.expressDeliveryPrice !== null &&
+                        pricing.expressDeliveryPrice !== undefined
+                          ? Number(pricing.expressDeliveryPrice)
+                          : null,
+                    }
+                  : null,
+              };
+            }),
+          }));
+
+          return ctx.send({
+            data,
+          });
+        }
+
+        // Client / Non-Admin Response
+
+        const services = await strapi.db
+          .query("api::service.service")
+          .findMany({
+            where: {
+              ...categoryWhere,
             },
             select: ["documentId", "name", "isActive"],
             orderBy: {
-              documentId: "desc",
+              documentId: "asc",
             },
           });
 
@@ -937,30 +1026,6 @@ export default factories.createCoreController(
           documentId: service.documentId,
           name: service.name,
           isActive: service.isActive,
-          varients: (service.service_varients || []).map((variant: any) => {
-            const pricing = variant.service_pricings?.[0] || null;
-            return {
-              documentId: variant.documentId,
-              name: variant.name,
-              isActive: variant.isActive,
-              expressDeliveryAvailable: variant.expressDeliveryAvailable,
-              pricing: pricing
-                ? {
-                    price: Number(pricing.price),
-                    offerPrice:
-                      pricing.offerPrice !== null &&
-                      pricing.offerPrice !== undefined
-                        ? Number(pricing.offerPrice)
-                        : null,
-                    expressDeliveryPrice:
-                      pricing.expressDeliveryPrice !== null &&
-                      pricing.expressDeliveryPrice !== undefined
-                        ? Number(pricing.expressDeliveryPrice)
-                        : null,
-                  }
-                : null,
-            };
-          }),
         }));
 
         return ctx.send({
