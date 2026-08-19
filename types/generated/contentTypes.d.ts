@@ -981,6 +981,7 @@ export interface ApiPaymentCollectionPaymentCollection
     > &
       Schema.Attribute.DefaultTo<'pending'>;
     paymentDate: Schema.Attribute.DateTime;
+    paymentId: Schema.Attribute.String & Schema.Attribute.Unique;
     paymentUrl: Schema.Attribute.Text;
     publishedAt: Schema.Attribute.DateTime;
     transactionId: Schema.Attribute.String;

@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2026-08-19T06:36:40.660Z"
+    "x-generation-date": "2026-08-19T12:33:05.048Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -15246,6 +15246,9 @@
                         "format": "date-time"
                       },
                       "gatewayResponse": {},
+                      "paymentId": {
+                        "type": "string"
+                      },
                       "createdAt": {
                         "type": "string",
                         "format": "date-time"
@@ -19560,6 +19563,9 @@
                                               "format": "date-time"
                                             },
                                             "gatewayResponse": {},
+                                            "paymentId": {
+                                              "type": "string"
+                                            },
                                             "createdAt": {
                                               "type": "string",
                                               "format": "date-time"
@@ -24815,6 +24821,9 @@
                                                     "format": "date-time"
                                                   },
                                                   "gatewayResponse": {},
+                                                  "paymentId": {
+                                                    "type": "string"
+                                                  },
                                                   "createdAt": {
                                                     "type": "string",
                                                     "format": "date-time"
@@ -31042,6 +31051,9 @@
                                   "format": "date-time"
                                 },
                                 "gatewayResponse": {},
+                                "paymentId": {
+                                  "type": "string"
+                                },
                                 "createdAt": {
                                   "type": "string",
                                   "format": "date-time"
@@ -36379,6 +36391,9 @@
                             "format": "date-time"
                           },
                           "gatewayResponse": {},
+                          "paymentId": {
+                            "type": "string"
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -40550,6 +40565,9 @@
                                       "format": "date-time"
                                     },
                                     "gatewayResponse": {},
+                                    "paymentId": {
+                                      "type": "string"
+                                    },
                                     "createdAt": {
                                       "type": "string",
                                       "format": "date-time"
@@ -45575,6 +45593,9 @@
                                 "format": "date-time"
                               },
                               "gatewayResponse": {},
+                              "paymentId": {
+                                "type": "string"
+                              },
                               "createdAt": {
                                 "type": "string",
                                 "format": "date-time"
@@ -51363,6 +51384,9 @@
                             "format": "date-time"
                           },
                           "gatewayResponse": {},
+                          "paymentId": {
+                            "type": "string"
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -56747,6 +56771,9 @@
                       "format": "date-time"
                     },
                     "gatewayResponse": {},
+                    "paymentId": {
+                      "type": "string"
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -61893,6 +61920,9 @@
                       "format": "date-time"
                     },
                     "gatewayResponse": {},
+                    "paymentId": {
+                      "type": "string"
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -62701,6 +62731,9 @@
                 "format": "date-time"
               },
               "gatewayResponse": {},
+              "paymentId": {
+                "type": "string"
+              },
               "locale": {
                 "type": "string"
               },
@@ -66999,6 +67032,9 @@
                       "format": "date-time"
                     },
                     "gatewayResponse": {},
+                    "paymentId": {
+                      "type": "string"
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -67653,6 +67689,9 @@
             "format": "date-time"
           },
           "gatewayResponse": {},
+          "paymentId": {
+            "type": "string"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -73791,6 +73830,9 @@
                                                 "format": "date-time"
                                               },
                                               "gatewayResponse": {},
+                                              "paymentId": {
+                                                "type": "string"
+                                              },
                                               "createdAt": {
                                                 "type": "string",
                                                 "format": "date-time"
@@ -79200,6 +79242,9 @@
                                             "format": "date-time"
                                           },
                                           "gatewayResponse": {},
+                                          "paymentId": {
+                                            "type": "string"
+                                          },
                                           "createdAt": {
                                             "type": "string",
                                             "format": "date-time"
@@ -84301,6 +84346,9 @@
                                           "format": "date-time"
                                         },
                                         "gatewayResponse": {},
+                                        "paymentId": {
+                                          "type": "string"
+                                        },
                                         "createdAt": {
                                           "type": "string",
                                           "format": "date-time"
@@ -89641,6 +89689,9 @@
                                           "format": "date-time"
                                         },
                                         "gatewayResponse": {},
+                                        "paymentId": {
+                                          "type": "string"
+                                        },
                                         "createdAt": {
                                           "type": "string",
                                           "format": "date-time"
@@ -94958,6 +95009,9 @@
                                 "format": "date-time"
                               },
                               "gatewayResponse": {},
+                              "paymentId": {
+                                "type": "string"
+                              },
                               "createdAt": {
                                 "type": "string",
                                 "format": "date-time"
