@@ -2,11 +2,11 @@
  * service-varient controller
  */
 
-import { factories } from '@strapi/strapi';
+import { factories } from "@strapi/strapi";
 
-const UID = 'api::service-varient.service-varient';
-const SERVICE_UID = 'api::service.service';
-const PRICING_UID = 'api::service-pricing.service-pricing';
+const UID = "api::service-varient.service-varient";
+const SERVICE_UID = "api::service.service";
+const PRICING_UID = "api::service-pricing.service-pricing";
 
 export default factories.createCoreController(UID, ({ strapi }) => ({
   /**
@@ -34,22 +34,36 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
 
       // Extract service document ID
       let serviceId = service;
-      if (typeof service === 'object' && service !== null) {
-        serviceId = service.documentId || service.id || service.connect?.[0]?.documentId || service.connect?.[0];
+      if (typeof service === "object" && service !== null) {
+        serviceId =
+          service.documentId ||
+          service.id ||
+          service.connect?.[0]?.documentId ||
+          service.connect?.[0];
       }
 
       // Extract pricing fields
-      const finalPrice = price !== undefined ? price : (pricing?.price ?? service_pricing?.price);
-      const finalOfferPrice = offerPrice !== undefined ? offerPrice : (pricing?.offerPrice ?? service_pricing?.offerPrice);
-      const finalExpressPrice = expressDeliveryPrice !== undefined ? expressDeliveryPrice : (pricing?.expressDeliveryPrice ?? service_pricing?.expressDeliveryPrice);
+      const finalPrice =
+        price !== undefined
+          ? price
+          : (pricing?.price ?? service_pricing?.price);
+      const finalOfferPrice =
+        offerPrice !== undefined
+          ? offerPrice
+          : (pricing?.offerPrice ?? service_pricing?.offerPrice);
+      const finalExpressPrice =
+        expressDeliveryPrice !== undefined
+          ? expressDeliveryPrice
+          : (pricing?.expressDeliveryPrice ??
+            service_pricing?.expressDeliveryPrice);
 
       // Validations
       if (!name) {
-        throw new Error('Variant name is required.');
+        throw new Error("Variant name is required.");
       }
 
       if (!serviceId) {
-        throw new Error('Parent service is required.');
+        throw new Error("Parent service is required.");
       }
 
       // Verify parent service exists
@@ -61,8 +75,12 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
         throw new Error(`Service with ID "${serviceId}" not found.`);
       }
 
-      if (finalPrice === undefined || finalPrice === null || finalPrice === '') {
-        throw new Error('Price is required for variant.');
+      if (
+        finalPrice === undefined ||
+        finalPrice === null ||
+        finalPrice === ""
+      ) {
+        throw new Error("Price is required for variant.");
       }
 
       // Create Service Variant
@@ -104,13 +122,15 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
       });
 
       return ctx.send({
-        message: 'Service variant created successfully.',
+        message: "Service variant created successfully.",
         data: response,
       });
     } catch (error: any) {
       await trx.rollback();
-      strapi.log.error('Error creating service variant:', error);
-      return ctx.badRequest(error?.message || 'Failed to create service variant.');
+      strapi.log.error("Error creating service variant:", error);
+      return ctx.badRequest(
+        error?.message || "Failed to create service variant.",
+      );
     }
   },
 
@@ -152,7 +172,7 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
       });
 
       if (!existingVariant) {
-        throw new Error('Service variant not found.');
+        throw new Error("Service variant not found.");
       }
 
       // ===========================
@@ -160,8 +180,12 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
       // ===========================
 
       let serviceId = service;
-      if (typeof service === 'object' && service !== null) {
-        serviceId = service.documentId || service.id || service.connect?.[0]?.documentId || service.connect?.[0];
+      if (typeof service === "object" && service !== null) {
+        serviceId =
+          service.documentId ||
+          service.id ||
+          service.connect?.[0]?.documentId ||
+          service.connect?.[0];
       }
 
       if (serviceId) {
@@ -183,7 +207,8 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
       if (image !== undefined) updateData.image = image;
       if (serviceId !== undefined) updateData.service = serviceId;
       if (isActive !== undefined) updateData.isActive = isActive;
-      if (expressDeliveryAvailable !== undefined) updateData.expressDeliveryAvailable = expressDeliveryAvailable;
+      if (expressDeliveryAvailable !== undefined)
+        updateData.expressDeliveryAvailable = expressDeliveryAvailable;
       if (displayOrder !== undefined) updateData.displayOrder = displayOrder;
 
       if (Object.keys(updateData).length > 0) {
@@ -198,17 +223,29 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
       // 4. Update / Create Service Pricing
       // ===========================
 
-      const finalPrice = price !== undefined ? price : (pricing?.price ?? service_pricing?.price);
-      const finalOfferPrice = offerPrice !== undefined ? offerPrice : (pricing?.offerPrice ?? service_pricing?.offerPrice);
-      const finalExpressPrice = expressDeliveryPrice !== undefined ? expressDeliveryPrice : (pricing?.expressDeliveryPrice ?? service_pricing?.expressDeliveryPrice);
+      const finalPrice =
+        price !== undefined
+          ? price
+          : (pricing?.price ?? service_pricing?.price);
+      const finalOfferPrice =
+        offerPrice !== undefined
+          ? offerPrice
+          : (pricing?.offerPrice ?? service_pricing?.offerPrice);
+      const finalExpressPrice =
+        expressDeliveryPrice !== undefined
+          ? expressDeliveryPrice
+          : (pricing?.expressDeliveryPrice ??
+            service_pricing?.expressDeliveryPrice);
 
       const existingPricing = existingVariant.service_pricings?.[0];
 
       if (existingPricing) {
         const pricingUpdateData: Record<string, any> = {};
         if (finalPrice !== undefined) pricingUpdateData.price = finalPrice;
-        if (finalOfferPrice !== undefined) pricingUpdateData.offerPrice = finalOfferPrice;
-        if (finalExpressPrice !== undefined) pricingUpdateData.expressDeliveryPrice = finalExpressPrice;
+        if (finalOfferPrice !== undefined)
+          pricingUpdateData.offerPrice = finalOfferPrice;
+        if (finalExpressPrice !== undefined)
+          pricingUpdateData.expressDeliveryPrice = finalExpressPrice;
         if (serviceId !== undefined) pricingUpdateData.service = serviceId;
         if (isActive !== undefined) pricingUpdateData.isActive = isActive;
 
@@ -220,7 +257,8 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
           });
         }
       } else if (finalPrice !== undefined) {
-        const parentServiceDocId = serviceId || (existingVariant.service as any)?.documentId;
+        const parentServiceDocId =
+          serviceId || (existingVariant.service as any)?.documentId;
         await strapi.documents(PRICING_UID).create({
           data: {
             service_varient: existingVariant.documentId,
@@ -245,24 +283,28 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
       // ===========================
 
       const updatedFields: string[] = [];
-      if (name !== undefined) updatedFields.push('name');
-      if (image !== undefined) updatedFields.push('image');
-      if (serviceId !== undefined) updatedFields.push('service');
-      if (isActive !== undefined) updatedFields.push('isActive');
-      if (expressDeliveryAvailable !== undefined) updatedFields.push('expressDeliveryAvailable');
-      if (displayOrder !== undefined) updatedFields.push('displayOrder');
-      if (finalPrice !== undefined) updatedFields.push('price');
-      if (finalOfferPrice !== undefined) updatedFields.push('offerPrice');
-      if (finalExpressPrice !== undefined) updatedFields.push('expressDeliveryPrice');
+      if (name !== undefined) updatedFields.push("name");
+      if (image !== undefined) updatedFields.push("image");
+      if (serviceId !== undefined) updatedFields.push("service");
+      if (isActive !== undefined) updatedFields.push("isActive");
+      if (expressDeliveryAvailable !== undefined)
+        updatedFields.push("expressDeliveryAvailable");
+      if (displayOrder !== undefined) updatedFields.push("displayOrder");
+      if (finalPrice !== undefined) updatedFields.push("price");
+      if (finalOfferPrice !== undefined) updatedFields.push("offerPrice");
+      if (finalExpressPrice !== undefined)
+        updatedFields.push("expressDeliveryPrice");
 
       return ctx.send({
-        message: 'Service variant updated successfully.',
+        message: "Service variant updated successfully.",
         updatedFields,
       });
     } catch (error: any) {
       await trx.rollback();
-      strapi.log.error('Error updating service variant:', error);
-      return ctx.badRequest(error?.message || 'Failed to update service variant.');
+      strapi.log.error("Error updating service variant:", error);
+      return ctx.badRequest(
+        error?.message || "Failed to update service variant.",
+      );
     }
   },
 
@@ -278,14 +320,16 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
           image: true,
           service: true,
           service_pricings: true,
-          ...(typeof query?.populate === 'object' ? query.populate : {}),
+          ...(typeof query?.populate === "object" ? query.populate : {}),
         },
       });
 
       return ctx.send({ data: variants });
     } catch (error: any) {
-      strapi.log.error('Error fetching service variants:', error);
-      return ctx.badRequest(error?.message || 'Failed to fetch service variants.');
+      strapi.log.error("Error fetching service variants:", error);
+      return ctx.badRequest(
+        error?.message || "Failed to fetch service variants.",
+      );
     }
   },
 
@@ -305,13 +349,15 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
       });
 
       if (!variant) {
-        return ctx.notFound('Service variant not found.');
+        return ctx.notFound("Service variant not found.");
       }
 
       return ctx.send({ data: variant });
     } catch (error: any) {
-      strapi.log.error('Error fetching service variant:', error);
-      return ctx.badRequest(error?.message || 'Failed to fetch service variant.');
+      strapi.log.error("Error fetching service variant:", error);
+      return ctx.badRequest(
+        error?.message || "Failed to fetch service variant.",
+      );
     }
   },
 
@@ -332,7 +378,7 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
       });
 
       if (!variant) {
-        return ctx.notFound('Service variant not found.');
+        return ctx.notFound("Service variant not found.");
       }
 
       // Delete associated pricing entries
@@ -352,13 +398,106 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
       await trx.commit();
 
       return ctx.send({
-        message: 'Service variant deleted successfully.',
+        message: "Service variant deleted successfully.",
       });
     } catch (error: any) {
       await trx.rollback();
-      strapi.log.error('Error deleting service variant:', error);
-      return ctx.badRequest(error?.message || 'Failed to delete service variant.');
+      strapi.log.error("Error deleting service variant:", error);
+      return ctx.badRequest(
+        error?.message || "Failed to delete service variant.",
+      );
     }
   },
-}));
 
+async getBestSellerVariants(ctx) {
+  try {
+    const knex = strapi.db.connection;
+    const topVariants = await knex("order_items as oi")
+      .join("order_items_order_lnk as o_lnk", "oi.id", "o_lnk.order_item_id")
+      .join("orders as o", "o_lnk.order_id", "o.id")
+      .join("order_items_service_varient_lnk as v_lnk", "oi.id", "v_lnk.order_item_id")
+      .whereNotIn("o.order_status", ["cancelled", "refunded"])
+      .whereNot("o.payment_status", "failed")
+      .select("v_lnk.service_varient_id as variantId")
+      .sum("oi.quantity as totalSold")
+      .groupBy("v_lnk.service_varient_id")
+      .orderBy("totalSold", "desc")
+      .limit(4);
+
+    if (!topVariants.length) {
+      return ctx.send({ data: [] });
+    }
+
+    const topVariantIds = topVariants.map((v: any) => v.variantId);
+
+    // 2. Fetch full details ONLY for the top 4 variants
+    const variants: any = await strapi
+      .documents("api::service-varient.service-varient")
+      .findMany({
+        filters: {
+          id: {
+            $in: topVariantIds,
+          },
+        },
+        fields: ["documentId", "name"],
+        populate: {
+          image: {
+            fields: ["url"],
+          },
+          service: {
+            fields: ["name"],
+          },
+          service_pricings: {
+            fields: ["price", "offerPrice", "isActive", "createdAt"],
+          },
+        },
+      });
+
+    // Helper to get latest pricing
+    const getLatestPricing = (pricings?: any[]) => {
+      if (!Array.isArray(pricings) || pricings.length === 0) return null;
+      const activePricings = pricings.filter((p: any) => p.isActive !== false);
+      const targetList = activePricings.length > 0 ? activePricings : pricings;
+
+      return [...targetList].sort(
+        (a: any, b: any) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )[0];
+    };
+
+    const formattedData = topVariants
+      .map((item: any) => {
+        const variant = variants.find((v: any) => v.id === item.variantId);
+        if (!variant) return null;
+
+        const latestPricing = getLatestPricing(variant.service_pricings);
+
+        return {
+          documentId: variant.documentId,
+          name: variant.name,
+          imageUrl: variant.image?.url || null,
+          service: variant.service
+            ? {
+                name: variant.service.name,
+              }
+            : null,
+          pricing: latestPricing
+            ? {
+                price: latestPricing.price,
+                offerPrice: latestPricing.offerPrice,
+              }
+            : null,
+        };
+      })
+      .filter(Boolean);
+
+    return ctx.send({ data: formattedData });
+  } catch (error: any) {
+    strapi.log.error("Error fetching best seller variants:", error);
+    return ctx.badRequest(
+      error?.message || "Failed to fetch best seller variants."
+    );
+  }
+}
+
+}));

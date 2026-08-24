@@ -40,5 +40,13 @@ export default {
         auth: {},
       },
     },
+    {
+      method: "GET",
+      path: "/service-varients/best-sellers",
+      handler: "service-varient.getBestSellerVariants",
+      config: {
+        auth: {},
+      },
+    },
   ],
 };

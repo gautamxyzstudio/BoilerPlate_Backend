@@ -813,12 +813,58 @@ export default factories.createCoreController(
       try {
         const { name } = ctx.params;
 
-        const service = await strapi
+        // Single query with exact field selection
+        const service: any = await strapi
           .documents("api::service.service")
           .findFirst({
             filters: {
               name: {
                 $eqi: name,
+              },
+            },
+            fields: [
+              "documentId",
+              "name",
+              "scheduleType",
+              "isActive",
+              "pricingModel",
+            ],
+            populate: {
+              image: {
+                fields: ["url"],
+              },
+              service_pricings: {
+                fields: [
+                  "documentId",
+                  "price",
+                  "offerPrice",
+                  "isActive",
+                  "expressDeliveryPrice",
+                  "createdAt",
+                ],
+              },
+              service_varients: {
+                fields: [
+                  "documentId",
+                  "name",
+                  "isActive",
+                  "expressDeliveryAvailable",
+                ],
+                populate: {
+                  image: {
+                    fields: ["url"],
+                  },
+                  service_pricings: {
+                    fields: [
+                      "documentId",
+                      "price",
+                      "offerPrice",
+                      "isActive",
+                      "expressDeliveryPrice",
+                      "createdAt",
+                    ],
+                  },
+                },
               },
             },
           });
@@ -827,77 +873,51 @@ export default factories.createCoreController(
           return ctx.notFound("Service not found.");
         }
 
-        const response = await strapi
-          .documents("api::service.service")
-          .findOne({
-            documentId: service.documentId,
-            populate:
-              service.pricingModel === "flat"
-                ? {
-                    image: true,
-                    service_category: true,
-                    service_pricings: true,
-                  }
-                : {
-                    image: true,
-                    service_category: true,
-                    service_varients: {
-                      populate: {
-                        image: true,
-                        service_pricings: true,
-                      },
-                    },
-                  },
-          });
+        const isFlat = service.pricingModel === "flat";
 
-        if (!response) {
-          return ctx.notFound("Service not found.");
-        }
+        // Helper to pick only the latest pricing record
+        const getLatestPricing = (pricings?: any[]) => {
+          if (!Array.isArray(pricings) || pricings.length === 0) return [];
+
+          const latest = pricings.reduce((prev, curr) =>
+            new Date(curr.createdAt).getTime() >
+            new Date(prev.createdAt).getTime()
+              ? curr
+              : prev,
+          );
+
+          return [
+            {
+              documentId: latest.documentId,
+              price: latest.price,
+              offerPrice: latest.offerPrice,
+              isActive: latest.isActive,
+              expressDeliveryPrice: latest.expressDeliveryPrice,
+            },
+          ];
+        };
 
         const formattedResponse = {
-          documentId: response.documentId,
-          name: response.name,
-          imageUrl: response.image?.url || null,
-          scheduleType: response.scheduleType,
-          isActive: response.isActive,
+          documentId: service.documentId,
+          name: service.name,
+          imageUrl: service.image?.url || null,
+          scheduleType: service.scheduleType,
+          isActive: service.isActive,
 
-          service_category: response.service_category
+          ...(isFlat
             ? {
-                documentId: response.service_category.documentId,
-                name: response.service_category.name,
-                description: response.service_category.description,
-                isActive: response.service_category.isActive,
-              }
-            : null,
-
-          ...(response.pricingModel === "flat"
-            ? {
-                service_pricings: (response.service_pricings || []).map(
-                  (pricing) => ({
-                    documentId: pricing.documentId,
-                    price: pricing.price,
-                    offerPrice: pricing.offerPrice,
-                    isActive: pricing.isActive,
-                    expressDeliveryPrice: pricing.expressDeliveryPrice,
-                  }),
-                ),
+                service_pricings: getLatestPricing(service.service_pricings),
               }
             : {
-                service_varients: (response.service_varients || []).map(
-                  (variant) => ({
+                service_varients: (service.service_varients || []).map(
+                  (variant: any) => ({
                     documentId: variant.documentId,
                     name: variant.name,
                     isActive: variant.isActive,
                     imageUrl: variant.image?.url || null,
                     expressDeliveryAvailable: variant.expressDeliveryAvailable,
-                    service_pricings: (variant.service_pricings || []).map(
-                      (pricing) => ({
-                        documentId: pricing.documentId,
-                        price: pricing.price,
-                        offerPrice: pricing.offerPrice,
-                        isActive: pricing.isActive,
-                        expressDeliveryPrice: pricing.expressDeliveryPrice,
-                      }),
+                    service_pricings: getLatestPricing(
+                      variant.service_pricings,
                     ),
                   }),
                 ),
