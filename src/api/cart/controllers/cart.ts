@@ -8,7 +8,6 @@ import service from "../../service/services/service";
 export default factories.createCoreController(
   "api::cart.cart",
   ({ strapi }) => ({
-  
     async create(ctx) {
       try {
         // ===============================================
@@ -115,10 +114,17 @@ export default factories.createCoreController(
             filters: {
               documentId: { $in: serviceDocIds },
             },
-            fields: ["documentId", "name", "scheduleType", "pricingModel"],
+            fields: [
+              "id",
+              "documentId",
+              "name",
+              "scheduleType",
+              "pricingModel",
+            ],
             populate: {
               service_pricings: {
                 fields: [
+                  "id",
                   "documentId",
                   "price",
                   "offerPrice",
@@ -127,10 +133,11 @@ export default factories.createCoreController(
                 ],
               },
               service_varients: {
-                fields: ["documentId", "name"],
+                fields: ["id", "documentId", "name"],
                 populate: {
                   service_pricings: {
                     fields: [
+                      "id",
                       "documentId",
                       "price",
                       "offerPrice",
@@ -230,6 +237,9 @@ export default factories.createCoreController(
           subTotal += itemTotal;
 
           preparedCartItems.push({
+            serviceId: service.id,
+            variantId: variant?.id || null,
+            pricingId: pricing.id,
             service: service.documentId,
             serviceName: service.name,
             service_varient: variant?.documentId || null,
@@ -280,16 +290,12 @@ export default factories.createCoreController(
         // ===============================================
         // 6. Check Existing Cart & Run DB Writes
         // ===============================================
-        const existingCart = await strapi
-          .documents("api::cart.cart")
-          .findFirst({
-            filters: {
-              user_profile: {
-                documentId: userProfile.documentId,
-              },
-            },
-            fields: ["documentId"],
-          });
+        const existingCart = await strapi.db.query("api::cart.cart").findOne({
+          where: {
+            user_profile: { id: userProfile.id },
+          },
+          select: ["id", "documentId"],
+        });
 
         const isNewCart = !existingCart;
 
@@ -311,22 +317,32 @@ export default factories.createCoreController(
           grandTotal,
         };
 
+        let cartId: number;
         let cartDocId: string;
 
         if (isNewCart) {
           const newCart = await strapi.documents("api::cart.cart").create({
             data: cartData,
           });
+
+          // Query numeric DB ID for the relational cart-items insert
+          const createdDbCart = await strapi.db
+            .query("api::cart.cart")
+            .findOne({
+              where: { documentId: newCart.documentId },
+              select: ["id"],
+            });
+
+          cartId = createdDbCart.id;
           cartDocId = newCart.documentId;
         } else {
+          cartId = existingCart.id;
           cartDocId = existingCart.documentId;
 
-          // Single-query delete for old items
+          // Delete previous items directly by numeric cart ID
           await strapi.db.query("api::cart-item.cart-item").deleteMany({
             where: {
-              cart: {
-                documentId: cartDocId,
-              },
+              cart: cartId,
             },
           });
 
@@ -336,15 +352,14 @@ export default factories.createCoreController(
           });
         }
 
-        // Parallel insert for all cart items
         await Promise.all(
           preparedCartItems.map((item) =>
-            strapi.documents("api::cart-item.cart-item").create({
+            strapi.entityService.create("api::cart-item.cart-item", {
               data: {
-                cart: cartDocId,
-                service: item.service,
-                service_varient: item.service_varient,
-                service_pricing: item.service_pricing,
+                cart: cartId,
+                service: item.serviceId,
+                service_varient: item.variantId,
+                service_pricing: item.pricingId,
                 quantity: item.quantity,
                 unitPrice: item.unitPrice,
                 offerPrice: item.offerPrice,
