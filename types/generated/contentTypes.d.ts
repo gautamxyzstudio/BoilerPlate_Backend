@@ -595,6 +595,93 @@ export interface ApiCartCart extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiCouponUsageCouponUsage extends Struct.CollectionTypeSchema {
+  collectionName: 'coupon_usages';
+  info: {
+    description: 'Tracks coupon redemptions per user';
+    displayName: 'Coupon Usage';
+    pluralName: 'coupon-usages';
+    singularName: 'coupon-usage';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    coupon: Schema.Attribute.Relation<'manyToOne', 'api::coupon.coupon'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    discount_amount: Schema.Attribute.Decimal;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::coupon-usage.coupon-usage'
+    > &
+      Schema.Attribute.Private;
+    order_amount: Schema.Attribute.Decimal;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    used_at: Schema.Attribute.DateTime;
+    user_identifier: Schema.Attribute.String;
+    user_profile: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::user-profile.user-profile'
+    >;
+  };
+}
+
+export interface ApiCouponCoupon extends Struct.CollectionTypeSchema {
+  collectionName: 'coupons';
+  info: {
+    description: 'Laundry Service Coupon & Promo System';
+    displayName: 'Coupon';
+    pluralName: 'coupons';
+    singularName: 'coupon';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    code: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    coupon_usages: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::coupon-usage.coupon-usage'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.String;
+    discount_type: Schema.Attribute.Enumeration<['FLAT', 'PERCENTAGE']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'FLAT'>;
+    discount_value: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    end_date: Schema.Attribute.DateTime;
+    is_active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::coupon.coupon'
+    > &
+      Schema.Attribute.Private;
+    max_discount_amount: Schema.Attribute.Decimal;
+    min_order_amount: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
+    publishedAt: Schema.Attribute.DateTime;
+    start_date: Schema.Attribute.DateTime;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    usage_limit: Schema.Attribute.Integer;
+    usage_limit_per_user: Schema.Attribute.Integer &
+      Schema.Attribute.DefaultTo<1>;
+    used_count: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+  };
+}
+
 export interface ApiDriverDetailDriverDetail
   extends Struct.CollectionTypeSchema {
   collectionName: 'driver_details';
@@ -1831,6 +1918,8 @@ declare module '@strapi/strapi' {
       'api::address.address': ApiAddressAddress;
       'api::cart-item.cart-item': ApiCartItemCartItem;
       'api::cart.cart': ApiCartCart;
+      'api::coupon-usage.coupon-usage': ApiCouponUsageCouponUsage;
+      'api::coupon.coupon': ApiCouponCoupon;
       'api::driver-detail.driver-detail': ApiDriverDetailDriverDetail;
       'api::driver-document.driver-document': ApiDriverDocumentDriverDocument;
       'api::notification-reader.notification-reader': ApiNotificationReaderNotificationReader;

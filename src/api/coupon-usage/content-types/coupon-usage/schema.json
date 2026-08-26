@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "coupon_usages",
+  "info": {
+    "singularName": "coupon-usage",
+    "pluralName": "coupon-usages",
+    "displayName": "Coupon Usage",
+    "description": "Tracks coupon redemptions per user"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "coupon": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::coupon.coupon",
+      "inversedBy": "coupon_usages"
+    },
+    "user_profile": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::user-profile.user-profile"
+    },
+    "user_identifier": {
+      "type": "string"
+    },
+    "discount_amount": {
+      "type": "decimal"
+    },
+    "order_amount": {
+      "type": "decimal"
+    },
+    "used_at": {
+      "type": "datetime"
+    }
+  }
+}
