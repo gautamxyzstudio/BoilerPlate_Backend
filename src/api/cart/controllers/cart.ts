@@ -30,6 +30,7 @@ export default factories.createCoreController(
           appointmentDate,
           appointmentTime,
           specialInstructions,
+          couponCode,
         } = body;
 
         if (!Array.isArray(items) || items.length === 0) {
@@ -281,10 +282,27 @@ export default factories.createCoreController(
         }
 
         const tax = 0;
-        const discount = 0;
+        let discount = 0;
+
+        if (couponCode) {
+          const couponService = strapi.service("api::coupon.coupon") as any;
+          const applyResult = await couponService.applyCoupon(
+            couponCode,
+            subTotal,
+            userProfile.documentId,
+            user.id.toString()
+          );
+          if ("isValid" in applyResult && !applyResult.isValid) {
+            return ctx.badRequest(applyResult.reason || "Coupon cannot be applied.");
+          }
+          if (applyResult.couponStatus === "APPLIED") {
+            discount = Number(applyResult.discountAmount || 0);
+          }
+        }
+
         const deliveryCharge = 0;
         const grandTotal = Number(
-          (subTotal + tax + deliveryCharge - discount).toFixed(2),
+          Math.max(0, subTotal + tax + deliveryCharge - discount).toFixed(2),
         );
 
         // ===============================================

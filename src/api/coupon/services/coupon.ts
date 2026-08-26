@@ -66,7 +66,7 @@ export default factories.createCoreService("api::coupon.coupon", ({ strapi }) =>
 
     const couponDbId = couponDbRecord?.id;
 
-    // 3. Fetch user usage count
+    // 3. Fetch user usage count from confirmed order redemptions
     const userUsageCount = couponDbId
       ? await this.getUserCouponUsageCount(couponDbId, userProfileId, userIdentifier)
       : 0;
@@ -85,7 +85,7 @@ export default factories.createCoreService("api::coupon.coupon", ({ strapi }) =>
   },
 
   /**
-   * Applies coupon, creates a coupon redemption usage record, and increments used_count
+   * Previews & applies coupon for cart/frontend calculation without permanently consuming the user limit yet.
    */
   async applyCoupon(code: string, orderAmount: number, userProfileId?: string, userIdentifier?: string) {
     const result = await this.validateAndCalculate(code, orderAmount, userProfileId, userIdentifier);
@@ -99,9 +99,36 @@ export default factories.createCoreService("api::coupon.coupon", ({ strapi }) =>
       return result;
     }
 
+    return {
+      code: (result as any).code,
+      title: (result as any).title,
+      description: (result as any).description,
+      discountAmount: (result as any).discountAmount,
+      originalOrderTotal: (result as any).originalOrderTotal,
+      finalPayableAmount: (result as any).finalPayableAmount,
+      couponStatus: "APPLIED",
+      message: (result as any).message || "Coupon applied successfully.",
+    };
+  },
+
+  /**
+   * Confirms coupon usage during actual Order Creation, creates coupon-usage record & increments used_count
+   */
+  async confirmCouponUsage(code: string, orderAmount: number, userProfileId?: string, userIdentifier?: string) {
+    const result = await this.validateAndCalculate(code, orderAmount, userProfileId, userIdentifier);
+
+    if ("isValid" in result && !result.isValid) {
+      return result;
+    }
+
+    const evalStatus = (result as any).couponStatus || (result as any).status;
+    if (evalStatus !== "APPLIED") {
+      return result;
+    }
+
     const coupon = (result as any).coupon;
 
-    // Increment used_count on coupon
+    // 1. Increment used_count on coupon
     const newUsedCount = Number(coupon.used_count || 0) + 1;
     await strapi.documents("api::coupon.coupon").update({
       documentId: coupon.documentId,
@@ -110,7 +137,7 @@ export default factories.createCoreService("api::coupon.coupon", ({ strapi }) =>
       } as any,
     });
 
-    // Create coupon usage record
+    // 2. Create permanent coupon usage record
     const couponDbRecord = await strapi.db.query("api::coupon.coupon").findOne({
       where: { documentId: coupon.documentId },
       select: ["id"],
@@ -135,7 +162,7 @@ export default factories.createCoreService("api::coupon.coupon", ({ strapi }) =>
       originalOrderTotal: (result as any).originalOrderTotal,
       finalPayableAmount: (result as any).finalPayableAmount,
       couponStatus: "APPLIED",
-      message: (result as any).message || "Coupon applied successfully.",
+      message: "Coupon usage confirmed for order.",
     };
   },
 

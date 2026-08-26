@@ -23,7 +23,7 @@ export default factories.createCoreController(
         }
 
         const body = ctx.request.body?.data || ctx.request.body || {};
-        const { paymentMethod } = body;
+        const { paymentMethod, couponCode } = body;
 
         if (!paymentMethod) {
           return ctx.badRequest("Payment method is required.");
@@ -203,15 +203,29 @@ export default factories.createCoreController(
                 .toFixed(2),
             );
 
+            let orderDiscount = 0;
+            if (couponCode) {
+              const couponService = strapi.service("api::coupon.coupon") as any;
+              const applyResult = await couponService.confirmCouponUsage(
+                couponCode,
+                orderSubTotal,
+                userProfile.documentId,
+                user.id.toString()
+              );
+              if ("isValid" in applyResult && !applyResult.isValid) {
+                throw new Error(applyResult.reason || "Coupon cannot be applied.");
+              }
+              if (applyResult.couponStatus === "APPLIED") {
+                orderDiscount = Number(applyResult.discountAmount || 0);
+              }
+            }
+
             const orderTax = 0;
-            const orderDiscount = 0;
             const orderDeliveryCharge = 0;
             const orderGrandTotal = Number(
-              (
-                orderSubTotal +
-                orderTax +
-                orderDeliveryCharge -
-                orderDiscount
+              Math.max(
+                0,
+                orderSubTotal + orderTax + orderDeliveryCharge - orderDiscount
               ).toFixed(2),
             );
 
