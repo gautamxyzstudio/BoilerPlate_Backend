@@ -619,6 +619,7 @@ export interface ApiCouponUsageCouponUsage extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     order_amount: Schema.Attribute.Decimal;
+    orderNo: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

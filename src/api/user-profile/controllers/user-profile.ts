@@ -383,124 +383,114 @@ export default factories.createCoreController(
     },
 
     async customerCreatedByAdmin(ctx: Context) {
-      const trx = await strapi.db.transaction();
+      const loggedInUser = ctx.state.user;
+
+      if (!loggedInUser) {
+        return ctx.unauthorized("You are not authorized.");
+      }
+
+      const body = ctx.request.body?.data || ctx.request.body;
+
+      const { fullName, email, phoneNumber, address } = body;
+
+      const normalizedEmail = normalizeIdentifier(email);
+
+      if (!normalizedEmail || normalizedEmail.identifierType !== "email") {
+        return ctx.badRequest("Please provide a valid email address.");
+      }
+
+      const normalizedPhone = normalizeIdentifier(phoneNumber);
+
+      if (!normalizedPhone || normalizedPhone.identifierType !== "phone") {
+        return ctx.badRequest("Please provide a valid phone number.");
+      }
+
+      const emailValue = normalizedEmail.identifier;
+      const phoneValue = normalizedPhone.identifier;
+
+      if (!fullName) {
+        return ctx.badRequest("Full name is required.");
+      }
+
+      if (!email) {
+        return ctx.badRequest("Email is required.");
+      }
+
+      if (!phoneNumber) {
+        return ctx.badRequest("Phone number is required.");
+      }
+
+      if (!address) {
+        return ctx.badRequest("Address is required.");
+      }
+
+      const {
+        streetAddress,
+        fullAddress,
+        city,
+        state,
+        postalCode,
+        country,
+        latitude,
+        longitude,
+        addressType,
+      } = address;
+
+      if (
+        !streetAddress ||
+        !fullAddress ||
+        !city ||
+        !state ||
+        !postalCode ||
+        !country ||
+        !addressType
+      ) {
+        return ctx.badRequest("Please provide complete address.");
+      }
+
+      const existingEmail = await strapi.db
+        .query("plugin::users-permissions.user")
+        .findOne({
+          where: {
+            email: emailValue,
+          },
+        });
+
+      if (existingEmail) {
+        return ctx.badRequest("Email already exists.");
+      }
+
+      const existingPhone = await strapi.db
+        .query("plugin::users-permissions.user")
+        .findOne({
+          where: {
+            phoneNumber: phoneValue,
+          },
+        });
+
+      if (existingPhone) {
+        return ctx.badRequest("Phone number already exists.");
+      }
+
+      const customerRole = await strapi.db
+        .query("plugin::users-permissions.role")
+        .findOne({
+          where: {
+            name: "Customer",
+          },
+        });
+
+      if (!customerRole) {
+        return ctx.badRequest("Customer role not found.");
+      }
+
+      const customerId = await generateCustomerId();
+      const temporaryPassword = generateTemporaryPassword();
+
+      let trx: any = null;
 
       try {
-        const loggedInUser = ctx.state.user;
-
-        if (!loggedInUser) {
-          await trx.rollback();
-          return ctx.unauthorized("You are not authorized.");
-        }
-
-        const body = ctx.request.body?.data || ctx.request.body;
-
-        const { fullName, email, phoneNumber, address } = body;
-
-        const normalizedEmail = normalizeIdentifier(email);
-
-        if (!normalizedEmail || normalizedEmail.identifierType !== "email") {
-          await trx.rollback();
-          return ctx.badRequest("Please provide a valid email address.");
-        }
-
-        const normalizedPhone = normalizeIdentifier(phoneNumber);
-
-        if (!normalizedPhone || normalizedPhone.identifierType !== "phone") {
-          await trx.rollback();
-          return ctx.badRequest("Please provide a valid phone number.");
-        }
-
-        const emailValue = normalizedEmail.identifier;
-        const phoneValue = normalizedPhone.identifier;
-
-        if (!fullName) {
-          await trx.rollback();
-          return ctx.badRequest("Full name is required.");
-        }
-
-        if (!email) {
-          await trx.rollback();
-          return ctx.badRequest("Email is required.");
-        }
-
-        if (!phoneNumber) {
-          await trx.rollback();
-          return ctx.badRequest("Phone number is required.");
-        }
-
-        if (!address) {
-          await trx.rollback();
-          return ctx.badRequest("Address is required.");
-        }
-
-        const {
-          streetAddress,
-          fullAddress,
-          city,
-          state,
-          postalCode,
-          country,
-          latitude,
-          longitude,
-          addressType,
-        } = address;
-
-        if (
-          !streetAddress ||
-          !fullAddress ||
-          !city ||
-          !state ||
-          !postalCode ||
-          !country ||
-          !addressType
-        ) {
-          await trx.rollback();
-          return ctx.badRequest("Please provide complete address.");
-        }
-
-        const existingEmail = await strapi.db
-          .query("plugin::users-permissions.user")
-          .findOne({
-            where: {
-              email: emailValue,
-            },
-          });
-
-        if (existingEmail) {
-          await trx.rollback();
-          return ctx.badRequest("Email already exists.");
-        }
-
-        const existingPhone = await strapi.db
-          .query("plugin::users-permissions.user")
-          .findOne({
-            where: {
-              phoneNumber: phoneValue,
-            },
-          });
-
-        if (existingPhone) {
-          await trx.rollback();
-          return ctx.badRequest("Phone number already exists.");
-        }
-
-        const customerRole = await strapi.db
-          .query("plugin::users-permissions.role")
-          .findOne({
-            where: {
-              name: "Customer",
-            },
-          });
-
-        if (!customerRole) {
-          await trx.rollback();
-          return ctx.badRequest("Customer role not found.");
-        }
-
-        const customerId = await generateCustomerId();
-
-        const temporaryPassword = generateTemporaryPassword();
+        trx = await strapi.db.transaction();
 
         const createdUser = await strapi
           .plugin("users-permissions")
@@ -554,6 +544,7 @@ export default factories.createCoreController(
         });
 
         await trx.commit();
+        trx = null;
 
         const customer = await strapi.entityService.findOne(
           "api::user-profile.user-profile",
@@ -571,9 +562,15 @@ export default factories.createCoreController(
           data: customer,
         });
       } catch (error) {
-        await trx.rollback();
+        if (trx) {
+          try {
+            await trx.rollback();
+          } catch (rollbackError) {
+            strapi.log.error("Transaction rollback failed:", rollbackError);
+          }
+        }
 
-        strapi.log.error(error);
+        strapi.log.error("Customer creation error:", error);
 
         return ctx.internalServerError(
           "Something went wrong while creating customer.",

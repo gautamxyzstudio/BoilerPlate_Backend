@@ -210,7 +210,8 @@ export default factories.createCoreController(
                 couponCode,
                 orderSubTotal,
                 userProfile.documentId,
-                user.id.toString()
+                user.id.toString(),
+                currentOrderNo
               );
               if ("isValid" in applyResult && !applyResult.isValid) {
                 throw new Error(applyResult.reason || "Coupon cannot be applied.");

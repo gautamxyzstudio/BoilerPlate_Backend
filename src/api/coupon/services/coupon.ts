@@ -114,7 +114,7 @@ export default factories.createCoreService("api::coupon.coupon", ({ strapi }) =>
   /**
    * Confirms coupon usage during actual Order Creation, creates coupon-usage record & increments used_count
    */
-  async confirmCouponUsage(code: string, orderAmount: number, userProfileId?: string, userIdentifier?: string) {
+  async confirmCouponUsage(code: string, orderAmount: number, userProfileId?: string, userIdentifier?: string, orderNo?: string) {
     const result = await this.validateAndCalculate(code, orderAmount, userProfileId, userIdentifier);
 
     if ("isValid" in result && !result.isValid) {
@@ -150,6 +150,7 @@ export default factories.createCoreService("api::coupon.coupon", ({ strapi }) =>
         user_identifier: userIdentifier || "guest",
         discount_amount: (result as any).discountAmount,
         order_amount: orderAmount,
+        orderNo: orderNo || null,
         used_at: new Date().toISOString(),
       } as any,
     });

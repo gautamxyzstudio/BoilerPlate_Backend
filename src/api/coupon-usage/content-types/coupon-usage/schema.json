@@ -34,6 +34,9 @@
     },
     "used_at": {
       "type": "datetime"
+    },
+    "orderNo": {
+      "type": "string"
     }
   }
 }

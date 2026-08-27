@@ -274,5 +274,14 @@ export default factories.createCoreController(
         return ctx.badRequest(error?.message || "Failed to seed coupons.");
       }
     },
+
+    async find(ctx) {
+      const data = await strapi.entityService.findMany("api::coupon.coupon", {
+        ...ctx.query,
+        limit: -1,
+      });
+
+      return { data };
+    },
   }),
 );

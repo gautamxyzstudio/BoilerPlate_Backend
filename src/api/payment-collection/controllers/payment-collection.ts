@@ -149,7 +149,7 @@ export default factories.createCoreController(uid, ({ strapi }) => ({
 
       // Fetch logs
       const paymentLogs = await strapi.db.query(uid).findMany({
-        filters,
+        where: filters,
         orderBy: { paymentDate: "desc" },
         populate: {
           order: {
@@ -167,7 +167,7 @@ export default factories.createCoreController(uid, ({ strapi }) => ({
       });
 
       // Format log records
-      const formattedLogs = paymentLogs.map((log: any) => {
+      const formattedLogs = (paymentLogs || []).map((log: any) => {
         const order = log.order;
         const userProfile = order?.user_profile;
         const orderItems = order?.order_items;
@@ -178,7 +178,7 @@ export default factories.createCoreController(uid, ({ strapi }) => ({
           transactionId: log.transactionId,
           amount: Number(log.amount || 0),
           payment_status: log.payment_status,
-          paymentDate: log.paymentDate,
+          paymentDate: log.paymentDate || log.createdAt,
           createdAt: log.createdAt,
           order: order
             ? {
@@ -186,18 +186,18 @@ export default factories.createCoreController(uid, ({ strapi }) => ({
                 paymentMethod: order.paymentMethod,
               }
             : null,
-          orderItems: orderItems.map((item: any) => {
-            return {
-              quantity: item.quantity,
-              totalPrice: item.totalPrice,
-              service: {
-                name: item.service?.name,
-              },
-              service_varient: {
-                name: item.service_varient?.name,
-              },
-            };
-          }),
+          orderItems: Array.isArray(orderItems)
+            ? orderItems.map((item: any) => ({
+                quantity: item?.quantity || 1,
+                totalPrice: item?.totalPrice || 0,
+                service: {
+                  name: item?.service?.name || null,
+                },
+                service_varient: {
+                  name: item?.service_varient?.name || null,
+                },
+              }))
+            : [],
           customer: userProfile
             ? {
                 documentId: userProfile.documentId,
