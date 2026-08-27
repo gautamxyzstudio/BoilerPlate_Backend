@@ -150,7 +150,9 @@ export default factories.createCoreController(uid, ({ strapi }) => ({
       // Fetch logs
       const paymentLogs = await strapi.db.query(uid).findMany({
         where: filters,
-        orderBy: { paymentDate: "desc" },
+        orderBy: {
+          createdAt: "desc",
+        },
         populate: {
           order: {
             populate: {
@@ -178,7 +180,7 @@ export default factories.createCoreController(uid, ({ strapi }) => ({
           transactionId: log.transactionId,
           amount: Number(log.amount || 0),
           payment_status: log.payment_status,
-          paymentDate: log.paymentDate || log.createdAt,
+          paymentDate: log.paymentDate || null,
           createdAt: log.createdAt,
           order: order
             ? {
