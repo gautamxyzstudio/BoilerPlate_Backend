@@ -86,33 +86,19 @@ export default factories.createCoreController(
           normalizedEmail = normalized.identifier;
         }
 
-        // Check duplicate email / phone
-        const duplicateProfile = await strapi.db
-          .query("api::user-profile.user-profile")
-          .findOne({
-            where: {
-              $or: [
-                ...(normalizedEmail ? [{ email: normalizedEmail }] : []),
-                ...(normalizedPhoneNumber
-                  ? [{ phoneNumber: normalizedPhoneNumber }]
-                  : []),
-              ],
-            },
-          });
+        // Check duplicate email
+        if (normalizedEmail) {
+          const duplicateProfile = await strapi.db
+            .query("api::user-profile.user-profile")
+            .findOne({
+              where: {
+                email: normalizedEmail,
+              },
+            });
 
-        if (duplicateProfile) {
-          if (normalizedEmail && duplicateProfile.email === normalizedEmail) {
+          if (duplicateProfile) {
             return ctx.badRequest(
               "Email is already associated with another profile.",
-            );
-          }
-
-          if (
-            normalizedPhoneNumber &&
-            duplicateProfile.phoneNumber === normalizedPhoneNumber
-          ) {
-            return ctx.badRequest(
-              "Phone number is already associated with another profile.",
             );
           }
         }
@@ -340,36 +326,22 @@ export default factories.createCoreController(
           normalizedEmail = normalized.identifier;
         }
 
-        // Check duplicate email / phone (exclude current profile)
-        const duplicateProfile = await strapi.db
-          .query("api::user-profile.user-profile")
-          .findOne({
-            where: {
-              id: {
-                $ne: existingProfile.id,
+        // Check duplicate email (exclude current profile)
+        if (normalizedEmail) {
+          const duplicateProfile = await strapi.db
+            .query("api::user-profile.user-profile")
+            .findOne({
+              where: {
+                id: {
+                  $ne: existingProfile.id,
+                },
+                email: normalizedEmail,
               },
-              $or: [
-                ...(normalizedEmail ? [{ email: normalizedEmail }] : []),
-                ...(normalizedPhoneNumber
-                  ? [{ phoneNumber: normalizedPhoneNumber }]
-                  : []),
-              ],
-            },
-          });
+            });
 
-        if (duplicateProfile) {
-          if (normalizedEmail && duplicateProfile.email === normalizedEmail) {
+          if (duplicateProfile) {
             return ctx.badRequest(
               "Email is already associated with another profile.",
-            );
-          }
-
-          if (
-            normalizedPhoneNumber &&
-            duplicateProfile.phoneNumber === normalizedPhoneNumber
-          ) {
-            return ctx.badRequest(
-              "Phone number is already associated with another profile.",
             );
           }
         }
@@ -720,25 +692,6 @@ export default factories.createCoreController(
           }
         }
 
-        // Check duplicate phone
-        if (phoneNumber) {
-          const existingPhone = await strapi
-            .documents("api::user-profile.user-profile")
-            .findFirst({
-              filters: {
-                phoneNumber: {
-                  $eq: phoneValue,
-                },
-                documentId: {
-                  $ne: documentId,
-                },
-              },
-            });
-
-          if (existingPhone) {
-            return ctx.badRequest("Phone number already exists.");
-          }
-        }
 
         // Update user profile
         const profileData: Record<string, any> = {};
